@@ -1,0 +1,7 @@
+html{background: #ffd;margin: 5px; font-family:'Montserrat',sans-serif;}
+body{display:block;max-width:1400px;margin: auto;margin-top: 5px;padding:5px;font-size:14px;overflow: auto;background: #fff;border: 1px solid #cccccc;}
+
+li{display: block;padding:3px;text-decoration:none;}
+.key{width: 200px; background-color: #fff; color: #565656; text-align: right; border:none;}
+.val{width: 350px; background-color: #eee;}
+.zapisz{margin-left: 200px;}

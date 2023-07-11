@@ -1,0 +1,20 @@
+nav{
+    padding: 5px;
+    width: 100%;
+}
+
+nav * {
+    color: #fff;
+}
+
+nav>ul{
+    display: inline;
+}
+
+nav>ul>li{
+    display: inline;
+}
+
+nav>ul>li>*{
+    display:inline;
+}

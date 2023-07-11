@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Allegro - dostawa towaru</title>
+	<meta name="author" content="Maciej Krupiński">
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/offers.css">
+    <script defer src="scripts/showproducts.js"></script>
+    <script defer src="scripts/editproducts.js"></script>
+    <script defer src="scripts/otherscripts.js"></script>
+</head>
+<body id="body" onload="getoffers();">
+<header>
+    <input type="text" name="search" id="search" value="" class="search-params" placeholder="szukaj" onchange="searchData();">
+
+    <input type="text" name="ocenaod" id="ocenaod" value="" class="search-params" placeholder="cena min" onchange="searchData();">
+
+    <input type="text" name="ocenado" id="ocenado" value="" placeholder="cena max" class="search-params" onchange="searchData();">
+
+    <select name="ostatus" id="ostatus" class="searchparamsselect" onchange="getoffers();">
+        <option value="ALL">wszystkie</option>
+        <option value="ACTIVE" selected="selected">aktywna</option>
+        <option value="ENDED">zakończona</option>
+        <option value="INACTIVE">szkic</option>
+        <option value="ADMIN">zakończona - ADMIN</option>
+    </select>
+
+    <select name="ostock" id="ostock" class="searchparamsselect" onchange="getoffers();">
+        <option value="all" selected="selected">wszystkie</option>
+        <option value="notempty">dostępne</option>
+        <option value="empty">nie dostępne</option>
+        <option value="toomuch">niezgodność stanu</option>
+        <option value="pricetolower">cena za niska</option>
+    </select>
+    <div class="search-group">
+        <label for="dostawa">Dostawa</label>
+        <input type="checkbox" class="checkbox" id="dostawa" name="dostawa" value="1" onchange="getoffers();">
+    </div>
+    <div class="search-group">
+        <label for="prowizja">Prowizja</label>
+        <input type="checkbox" class="checkbox" id="prowizja" name="prowizja" value="1" onchange="prowizja();">
+    </div>
+
+    <select name="osort" id="osort" class="searchparamsselect" onchange="getoffers();">
+        <option value="default" selected="selected">od najnowszej</option>
+        <option value="sellingMode.price.amount">po cenie rosnąco</option>
+        <option value="-sellingMode.price.amount">po cenie malejąco</option>
+        <option value="stock.sold">liczba sprzedanych od najmniejszej</option>
+        <option value="-stock.sold">liczba sprzedanych od największej</option>
+        <option value="stock.available">liczba sztuk od najmniejszej</option>
+        <option value="-stock.available">liczba sztuk od największej</option>
+        <option value="-default">od najstarszej</option>
+        <option value="events">events</option>
+        <option value="sale.time">ostatnio sprzedane</option>
+    </select>
+
+    <input type="text" name="olimit" id="olimit" value="20" class="search-params" onchange="getoffers();">
+
+    <div class="search-group">
+        <input type="button" name="oloffset" id="oloffset" value="PREV" class="paramsoffsetbutton" disabled="disabled" onclick="changeOffset(this);">
+        <input type="text" name="ooffset" id="ooffset" value="0" class="paramsoffset" onchange="changeOffset(this);">
+        <input type="button" name="ogoffset" id="ogoffset" value="NEXT" class="paramsoffsetbutton" onclick="changeOffset(this);">
+    </div>
+                
+    <span id="totalcount">0</span>
+                
+    <input type="text" name="all_code" id="all_code" ondblclick="searchByCodes()">
+                
+    <button onclick="checkStock()">Ilości</button>
+
+</header>
+
+<main id="myshows">
+    <div id="parameterserror"></div>
+    <div id="showoffers"></div>
+</main>
+
+<footer>
+    <p>allegro offers</p>
+</footer>
+</body>
+</html>
+
+
+<template id="offer-data">
+    <div class="offer">
+        <div class="offerdata image">
+            <img class="primary-image" src="" alt="primary" />
+        </div>
+        <div class="offerdata description">
+            <a class="name" href="" target="_blank"></a>
+            <p class="id"></p>
+            <p class="external-codes"></p>
+            <select class="shippinglist" onChange="setShipping(this)"></select>
+        </div>
+        <div class="offerdata stats">
+            <p></p>
+            <p></p>
+            <p></p>
+        </div>
+        <div class="offerdata changeoffer">
+            <div class="akcja">
+                <input class="price" type="text" ondblclick="setPriceDbl(this)">
+                <button onclick="setPrice(this)">cena</button>
+            </div>
+            <div class="akcja">
+                <input class="stock" type="text" ondblclick="setStockDbl(this)">
+                <button onclick="setStock(this)">ilość</button>
+            </div>
+            <div class="akcja">
+                <input class="externalid" type="text">
+                <button onclick="setExternalId(this)">kod</button>
+            </div>
+            <div class="akcja">
+                <input class="eancode" type="text" placeholder="pobierz ean" ondblclick="getEanFromSote(this)">
+                <button onclick="setEAN(this)">ean</button>
+            </div>
+        </div>
+        <div class="offerdata editoffer">
+            <div class="akcja">
+                <button onclick="edit(this)">edytuj</button>
+            </div>
+            <div class="akcja">
+                <button onclick="same(this)">podobna</button>
+            </div>
+            <div class="akcja">
+                <button onclick="setStatus(this)"></button>
+            </div>
+        </div>
+        <div class="offerdata info"></div>
+    </div>
+</template>
+
+<template id="product-data">
+    <li class="product">
+        <span class="fpp-code"></span>
+        <span class="fpp-name"></span>
+        <span class="fpp-stock"></span>
+        <span class="fpp-price"></span>
+        <span></span>
+    </li>
+</template>
+
+<template id="parametersdata">
+    <li class="param-string">
+        <span class="param-name"></span>
+        <input type="text" name="param-name" value="">
+    </li>
+</template>
+
+<template id="parametersdict">
+    <li class="param-string">
+        <span class="param-name"></span>
+        <select name="">
+            <option value=""></option>
+        </select>
+    </li>
+</template>

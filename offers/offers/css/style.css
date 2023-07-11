@@ -1,0 +1,49 @@
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+    font-family:'Microsoft Sans Serif',sans-serif;
+}
+
+html {
+    font-size: 14px;
+}
+
+body {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #f3f3f3;
+}
+
+header {
+    display: flex;
+    padding: 10px 0px;
+    margin-bottom: 10px;
+    gap: 10px;
+    flex-flow: row wrap;
+    position: sticky;
+    top: 0;
+    background-color: white;
+}
+
+header > *, header > div > * {
+    height: 25px;
+    padding: 0px 3px;
+}
+
+header > div > label, header > span {
+    line-height: 25px;
+}
+
+footer {
+    opacity: 0.3;
+}
+
+#all_code{
+    border: 1px solid rgb(236, 236, 236);;
+    background-color: rgb(236, 236, 236);
+    color: rgb(189, 189, 189);
+}

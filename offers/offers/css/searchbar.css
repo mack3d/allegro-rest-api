@@ -1,0 +1,15 @@
+.paramsoffsetbutton{
+    padding: 2px 5px;
+}
+
+.paramsoffset{
+    padding: 2px 5px;
+    border: 1px solid rgb(165, 165, 165);
+    width: 80px;
+}
+
+#all_code{
+    border: 1px solid rgb(236, 236, 236);;
+    background-color: rgb(236, 236, 236);
+    color: rgb(189, 189, 189);
+}

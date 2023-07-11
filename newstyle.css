@@ -1,0 +1,52 @@
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+    font-family:'Microsoft Sans Serif',sans-serif;
+    list-style: none;
+    text-decoration: none;
+}
+
+html{
+    font-size: 14px;
+}
+
+body{
+    width: 100%;
+    margin: auto;
+    overflow: auto;
+}
+
+header, #myshows, footer, nav{
+    display: block;
+    clear: both;
+}
+
+header, footer{
+    width: 100%;
+    clear: both;
+    background-color: #ff8521;
+}
+
+header>*{
+    font-size: 1.1rem;
+}
+
+#myshows, nav{
+    max-width: 1200px;
+    margin: auto;
+}
+
+#myshows{
+    padding: 10px 0px;
+}
+
+footer{
+    height: 30px;
+    margin: auto;
+}
+
+footer>p{
+    text-align: center;
+    color: #ccc;
+}

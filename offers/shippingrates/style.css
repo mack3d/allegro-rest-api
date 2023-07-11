@@ -1,0 +1,18 @@
+*{
+    margin: 0px;
+    padding: 0px;
+}
+html{
+    width: 3000px;
+}
+ul{
+    display: inline;
+    float: left;
+    border: 1px solid black;
+    width: 100px;
+}
+li{
+    display: block;
+    list-style: none;
+    border: 1px solid black;
+}

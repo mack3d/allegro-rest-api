@@ -1,0 +1,206 @@
+html {
+  background: #ccc;
+  margin: 5px;
+  font-family: "Microsoft Sans Serif", sans-serif;
+}
+body {
+  max-width: 1400px;
+  margin: auto;
+  margin-top: 5px;
+  padding: 5px;
+  color: #292929;
+  font-size: 13px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #cccccc;
+}
+#footer {
+  clear: both;
+}
+
+nav {
+  display: block;
+  position: static;
+  width: 100%;
+  height: 36px;
+  background-color: #c5c5c5;
+  list-style-type: none;
+}
+nav li,
+nav li a img {
+  height: 30px;
+  cursor: pointer;
+}
+#smart {
+  height: 26px;
+  margin-top: 2px;
+}
+nav li a {
+  display: inline-block;
+  padding: 3px;
+  text-decoration: none;
+}
+nav li:nth-child(-n + 4) {
+  float: left;
+}
+nav li:nth-child(n + 4) {
+  float: right;
+}
+nav li a.loguj {
+  color: #fff;
+  background-color: #ff5a00;
+  padding: 9px;
+  margin: 2px;
+}
+nav li #search {
+  height: 29px;
+}
+
+#gora,
+#dol {
+  clear: both;
+  display: block;
+  float: left;
+  width: 1400px;
+  margin-top: 5px;
+}
+table.czekamy {
+  display: inline;
+  float: left;
+  width: 696px;
+  margin: 2px;
+}
+table.gotowe {
+  display: block;
+  float: left;
+  width: 1400px;
+}
+table {
+  border-spacing: 0px;
+}
+table tbody tr {
+  cursor: pointer;
+  height: 25px;
+}
+table tbody tr:hover {
+  background-color: #ff9961;
+}
+table tr:nth-child(even) {
+  background-color: #f3f3f3;
+}
+table tr td:nth-child(1) {
+  width: 140px;
+}
+table tr td:nth-child(2) {
+  width: 150px;
+}
+table.czekamy tr td:nth-child(3) {
+  width: 410px;
+}
+table.gotowe tr td:nth-child(3) {
+  width: 350px;
+}
+table tr td:nth-child(4) {
+  width: 300px;
+}
+table tr td:nth-child(5) {
+  width: 70px;
+  text-align: right;
+}
+table tr td:nth-child(6) {
+  width: 130px;
+  text-align: center;
+}
+table tr td:nth-child(7) {
+  width: 100px;
+  text-align: center;
+}
+table thead {
+  width: 20px;
+  background-color: #ccc;
+}
+table thead tr td {
+  padding: 5px;
+  letter-spacing: 3px;
+  font-size: 16px;
+}
+table tbody tr td {
+  padding: 2px;
+}
+tr.orang {
+  color: #c54500;
+}
+tr.red {
+  color: hsl(0, 100%, 59%);
+}
+tr.bold {
+  font-weight: bold;
+}
+tr.normal {
+  font-weight: normal;
+}
+
+#dpd {
+  display: none;
+  position: absolute;
+  background-color: rgb(119, 119, 119);
+  opacity: 0.5;
+  z-index: 1000;
+  text-align: center;
+  color: white;
+  font-size: 25px;
+}
+
+#blokuj {
+  display: none;
+  margin: none;
+  padding: none;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  background-color: black;
+  opacity: 0.5;
+  z-index: 1000;
+  text-align: center;
+  color: white;
+  font-size: 15px;
+}
+.lds-facebook {
+  display: inline-block;
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+.lds-facebook div {
+  display: inline-block;
+  position: absolute;
+  left: 6px;
+  width: 13px;
+  background: #fff;
+  animation: lds-facebook 0.9s cubic-bezier(0, 0.8, 0.8, 1) infinite;
+}
+.lds-facebook div:nth-child(1) {
+  left: 6px;
+  animation-delay: -0.24s;
+}
+.lds-facebook div:nth-child(2) {
+  left: 26px;
+  animation-delay: -0.12s;
+}
+.lds-facebook div:nth-child(3) {
+  left: 45px;
+  animation-delay: 0;
+}
+@keyframes lds-facebook {
+  0% {
+    top: 6px;
+    height: 51px;
+  }
+  50%,
+  100% {
+    top: 19px;
+    height: 26px;
+  }
+}
