@@ -7,7 +7,8 @@ preg_match_all("/\d{4,5}/", $externalid, $codes);
 
 $codes = implode(',', $codes[0]);
 
-$pdo = new PDO('mysql:host=localhost;dbname=satserwis;charset=utf8mb4','root','');$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+include_once("../../database.class.php");
+$pdo = new DBconn();
 $dane = $pdo->prepare('SELECT nazwa, kodn, cena, ilosc FROM fpp WHERE FIND_IN_SET(kodn, :kod)');
 
 $dane->bindValue(":kod", $codes, PDO::PARAM_STR);
@@ -21,4 +22,3 @@ if ($dane->rowCount()>0){
 }
 
 print_r(json_encode($resp));
-?>

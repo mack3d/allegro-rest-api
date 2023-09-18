@@ -52,8 +52,10 @@
 		</form>
 	</div>
 	<?php
+
 	include_once("./allegrofunction.php");
 	include_once("./orders.class.php");
+	include_once("./database.class.php");
 
 	mb_internal_encoding('UTF-8');
 	mb_http_output('UTF-8');
@@ -75,8 +77,8 @@
 		$logowanie = '<a id="getnew" class="loguj" href="?connectallegro=isat" onclick="blokuj()">Pobierz nowe</a>';
 	}
 
-	$pdo = new PDO('mysql:host=localhost;dbname=satserwis;charset=utf8mb4', 'root', '');
-	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	$pdo = new DBconn();
+
 	$fodadd = $pdo->prepare('INSERT INTO newallegroorders (fod,messagetoseller,buyerlogin,statusfod,paymentid,paymenttype,paymentprovider,paymentfinished,paymentpaid,deliverymethod,itemid,summary,bougthtime,filledintime,readytime) VALUES (:fod,:messagetoseller,:buyerlogin,:statusfod,:paymentid,:paymenttype,:paymentprovider,:paymentfinished,:paymentpaid,:deliverymethod,:itemid,:summary,:bougthtime,:filledintime,:readytime)');
 	$fodupd = $pdo->prepare('UPDATE newallegroorders SET messagetoseller=:messagetoseller,buyerlogin=:buyerlogin,statusfod=:statusfod,paymentid=:paymentid,paymenttype=:paymenttype,paymentprovider=:paymentprovider,paymentfinished=:paymentfinished,paymentpaid=:paymentpaid,deliverymethod=:deliverymethod,itemid=:itemid,summary=:summary WHERE fod=:fod');
 	$buyeradd = $pdo->prepare('INSERT INTO newallegrobuyer (fod,userid,email,username,personalIdentity,phoneNumber,street,city,postcode) VALUES (:fod,:userid,:email,:username,:personalIdentity,:phoneNumber,:street,:city,:postcode)');
@@ -449,6 +451,7 @@
 			$szukanefody = $szukajwielopak->fetchall()[0]['fody'];
 		}
 	}
+
 
 	echo '<nav>
 <li><a href="index.php"><img src="./img/home1.png"></a></li>

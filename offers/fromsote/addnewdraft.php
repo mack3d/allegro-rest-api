@@ -13,20 +13,22 @@ $id = $odebranedane->id;
 $allegrocategory = $odebranedane->allegrocategory;
 $stock = $odebranedane->stock;
 
-function postImage($image) {
+function postImage($image)
+{
     $binary = file_get_contents($image);
-	$headers = ['Accept: application/vnd.allegro.public.v1+json','Content-Type: image/jpeg','Authorization: Bearer '.$_COOKIE['tokenn'],'accept-language: pl-PL'];
+    $headers = ['Accept: application/vnd.allegro.public.v1+json', 'Content-Type: image/jpeg', 'Authorization: Bearer ' . $_COOKIE['tokenn'], 'accept-language: pl-PL'];
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, 'https://upload.allegro.pl/sale/images');
     curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1 );
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $binary);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     $result = curl_exec($ch);
     return $result;
 }
 
-function getproductimagelist($id){
+function getproductimagelist($id)
+{
     $product = new SoapClient('https://sklep.satserwis.pl/backend.php/product/soap?wsdl');
     $productimage = new stdClass();
     $productimage->_session_hash = $_COOKIE['sklep'];
@@ -38,14 +40,14 @@ function getproductimagelist($id){
 
 $imglist = getproductimagelist($id);
 $images = array();
-foreach ($imglist as $image){
-    file_put_contents('C:/Users/Maciej/Pictures/'.$image->image_filename, base64_decode($image->image));
-    $localimage = 'C:/Users/Maciej/Pictures/'.$image->image_filename;
+foreach ($imglist as $image) {
+    file_put_contents('C:/Users/Maciej/Pictures/' . $image->image_filename, base64_decode($image->image));
+    $localimage = 'C:/Users/Maciej/Pictures/' . $image->image_filename;
     $imageurl = postImage($localimage);
     $jsonrespons = json_decode($imageurl);
     $photo = new stdClass();
     $photo->url = $jsonrespons->location;
-    array_push($images,$photo);
+    array_push($images, $photo);
 }
 
 
@@ -67,18 +69,18 @@ $item2->content = $description;
 $section2 = new stdClass;
 $section2->items = array($item2);
 
-$sections = array("sections"=>array($section,$section3,$section2));
+$sections = array("sections" => array($section, $section3, $section2));
 $desc = json_decode(json_encode($sections));
 
-$maletowary = array(75,25,07,37);
+$maletowary = array(75, 25, 07, 37);
 $duzetowary = array(99);
 
 $cennik = "d4aaae68-35f2-4de9-b863-2a7e7f7721b3";
 
-if (in_array(substr($code,0,2),$maletowary)){
+if (in_array(substr($code, 0, 2), $maletowary)) {
     $cennik = "dbd8415c-cd1f-4c76-8e2b-b57f82c231e3";
 }
-if (in_array(substr($code,0,2),$duzetowary)){
+if (in_array(substr($code, 0, 2), $duzetowary)) {
     $cennik = "80364e50-e41d-4440-ab6a-9d9169c91570";
 }
 
@@ -132,11 +134,10 @@ $draft = array(
         "shippingRates" => array(
             "id" => $cennik,
         ),
-        "handlingTime" => "PT24H",//"PT0S" - NATYCHMIAST,
+        "handlingTime" => "PT24H", //"PT0S" - NATYCHMIAST,
     ),
     "language" => "pl-PL"
 );
 
-$i = postPublic('https://api.allegro.pl/sale/offers',$draft);
+$i = postPublic('https://api.allegro.pl/sale/offers', $draft);
 print_r($i);
-?>

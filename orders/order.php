@@ -9,14 +9,14 @@
 
 <body onload="items()">
 	<?php
-	include_once("../allegrofunction.php");
-
-	include_once("./returnsInfo.php");
 	mb_internal_encoding('UTF-8');
 	mb_http_output('UTF-8');
 
-	$pdo = new PDO('mysql:host=localhost;dbname=satserwis;charset=utf8mb4', 'root', '');
-	$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+	include_once("../allegrofunction.php");
+	include_once("./returnsInfo.php");
+	include_once("../../database.class.php");
+
+	$pdo = new DBconn();
 
 	if (isset($_GET['fod'])) $numer_fod = $_GET['fod'];
 
@@ -31,16 +31,8 @@
 	$allegrofod = getRequestPublic('https://api.allegro.pl/order/checkout-forms/' . $numer_fod);
 	$allegrofod = json_decode($allegrofod);
 
-	/*$shipments = getRequestPublic('https://api.allegro.pl/order/checkout-forms/' . $numer_fod . '/shipments');
-	$shipments = json_decode($shipments);
-	$shipmentsInfo = new Returns($shipments->shipments[0]);*/
-
 	$orderbilling = getRequestPublic('https://api.allegro.pl/billing/billing-entries?order.id=' . $numer_fod);
 	$orderbilling = json_decode($orderbilling);
-
-	/*echo '<pre>';
-	print_r($shipmentsInfo);
-	echo '</pre>';*/
 
 	function zwrot($orderid)
 	{
@@ -261,6 +253,7 @@ print_r("total $totalcost");
 	}
 
 	async function itemVerify(item, externalid, quantity) {
+		const fpp = document.getElementById("fpp");
 		let name = item.getElementsByClassName("offername")[0];
 		const res = await fetch("./itemverify.php", {
 			method: "POST",
@@ -281,74 +274,47 @@ print_r("total $totalcost");
 	}
 
 	async function surcharges(nrfod) {
-		/*const res = await fetch("./odswiez.php?"+new URLSearchParams({'fod': nrfod}), {
-        method: "POST",
-        headers: {'Content-Type': 'application/x-www-form-url-encoded', 'Accept': 'application/json'}
-    });
-	const data = await res.json();
-	console.log(data);*/
-		//window.location.href = 'order.php?fod='+nrfod;
-
-		if (window.XMLHttpRequest) {
-			xmlhttp = new XMLHttpRequest();
-		} else {
-			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		xmlhttp.onreadystatechange = function() {
-			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-				var odpowiedz = xmlhttp.responseText;
-				alert(odpowiedz);
-				window.location.href = 'order.php?fod=' + nrfod;
-			}
-		}
-		var url = "&fod=" + nrfod;
-		xmlhttp.open("POST", "odswiez.php", true);
-		xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xmlhttp.send(url);
+		const res = await fetch("./odswiez.php?" + new URLSearchParams({
+			fod: nrfod
+		}));
+		window.location.href = 'order.php?fod=' + nrfod;
 	}
 
-	function status(indexselect) {
-		var komunikat = document.getElementById('komunikat');
-		var statusfodslect = document.getElementById('statusfoda');
-		var numerfod = document.getElementById('numerfod').innerText;
-		var pozwolenie = 1;
+	async function status(indexselect) {
+		const komunikat = document.getElementById('komunikat');
+		const statusfodslect = document.getElementById('statusfoda');
+		const numerfod = document.getElementById('numerfod').innerText;
+		let pozwolenie = 1;
 		if (indexselect == 5 & statusfodslect.selectedIndex == 2) {
 			alert('Zmień status na inny aby wydrukować!');
 			pozwolenie = 0;
 		}
 		if (pozwolenie != 0) {
-			if (window.XMLHttpRequest) {
-				xmlhttp = new XMLHttpRequest();
-			} else {
-				xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-			}
-			xmlhttp.onreadystatechange = function() {
-				if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-					var odpowiedz = xmlhttp.responseText;
-					console.log(odpowiedz)
-					if (odpowiedz == 5) {
-						odpowiedz = statusfodslect.selectedIndex;
-					}
-					console.log(odpowiedz)
-					komunikat.style.display = "block";
-					komunikat.style.height = "22px";
-					komunikat.innerText = "Zmieniłeś status na " + statusfodslect[odpowiedz].innerText;
-					if (indexselect == 5) {
-						statusfodslect.selectedIndex = odpowiedz;
-						print(numerfod);
-					}
-					if (statusfodslect.selectedIndex == 2) {
-						document.getElementById('drukuj').classList.add("dis");
-					} else {
-						document.getElementById('drukuj').classList.remove("dis");
-					}
+			const res = await fetch("./aktualizuj.php?" + new URLSearchParams({
+				fod: numerfod,
+				statusfodslect: statusfodslect[indexselect].value,
+				indexselect: indexselect
+			}));
+			const data = await res.json();
+			odpowiedz = data.statusindex
 
-				}
+			if (odpowiedz == 5) {
+				odpowiedz = statusfodslect.selectedIndex;
 			}
-			var url = "&status=" + numerfod + '//' + statusfodslect[indexselect].value + '//' + indexselect;
-			xmlhttp.open("POST", "aktualizuj.php", true);
-			xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			xmlhttp.send(url);
+
+			komunikat.style.display = "block";
+			komunikat.style.height = "22px";
+			komunikat.innerText = "Zmieniłeś status na " + statusfodslect[odpowiedz].innerText;
+
+			if (indexselect == 5) {
+				statusfodslect.selectedIndex = odpowiedz;
+				print(numerfod);
+			}
+			if (statusfodslect.selectedIndex == 2) {
+				document.getElementById('drukuj').classList.add("dis");
+			} else {
+				document.getElementById('drukuj').classList.remove("dis");
+			}
 		}
 	}
 

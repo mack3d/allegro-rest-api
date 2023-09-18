@@ -61,6 +61,7 @@ class Offers {
       await addButtonCreateNew()
     } else {
       await showOffers(allegro, products)
+      await addButtonCreateNew()
     }
   }
 
@@ -70,7 +71,7 @@ class Offers {
       for (const offer of offers) {
         const offerData = await getOffer(offer.innerText)
         const parent = offer.parentNode.parentNode
-        console.log(offer.innerText, offerData.publication.endedBy)
+        //console.log(offer.innerText, offerData.publication.endedBy)
         if (offerData.publication.endedBy == "ADMIN") {
           const stat = parent.getElementsByClassName("stats")[0]
           const par = document.createElement("p")

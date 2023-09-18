@@ -5,19 +5,16 @@ include_once("../allegrofunction.php");
 
 include_once("./returnsInfo.php");
 
+include_once("../../database.class.php");
+
 $fod = (isset($_GET['fod'])) ? $_GET['fod'] : $_POST['fod'];
 
 $returns = getRequest('https://api.allegro.pl/order/customer-returns?orderId=' . $fod);
 $returns = json_decode($returns);
 
-$returnsInfo = new Returns($returns->customerReturns[0]->parcels[0]);
-/*
-echo '<pre>';
-print_r($returns);
-print_r($returnsInfo);
-*/
-$pdo = new PDO('mysql:host=localhost;dbname=satserwis;charset=utf8mb4', 'root', '');
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$returnsInfo = new Returns($returns->customerReturns[0]->parcels);
+
+$pdo = new DBconn();
 
 function getOfferExternal($pdo, $fod_id, $item_id)
 {

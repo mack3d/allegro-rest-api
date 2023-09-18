@@ -11,7 +11,8 @@ function bladdodziennika($wpis){
 $fod = (isset($_POST['fod']))?$_POST['fod']:$_GET['fod'];
 include_once("../allegrofunction.php");
 
-$pdo = new PDO('mysql:host=localhost;dbname=satserwis;charset=utf8mb4','root','');$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+include_once("../../database.class.php");
+$pdo = new DBconn();
 
 $allegrofod = getRequest('https://api.allegro.pl/order/checkout-forms/'.$fod);
 $allegrofod = json_decode($allegrofod);
@@ -33,4 +34,3 @@ try{
 }catch(PDOException $e){bladdodziennika('invoiceadd'.$e->getMessage());}
 
 header("Location: ./order.php?fod=".$_GET['fod']);
-?>

@@ -40,9 +40,20 @@ function checkValueIsInt(numberValue) {
   return result
 }
 
+function externalIdToArr(external) {
+  let externalIds = external.split(" ")
+  for (let i = 0; i < externalIds.length; i++) {
+    const matchData = externalIds[i].match(/\d{1,5}/g)
+    const code = matchData[0]
+    const count = matchData[1] ?? "1"
+    externalIds[i] = { code, count }
+  }
+  return externalIds
+}
+
 function checkStock() {
   const verGroup = ["39", "21", "41", "30"]
-  const verCode = ["2353", "9215", "3412", "76453", "2350", "2351", "3668"]
+  const verCode = ["2353", "3412", "76453", "2350", "2351", "3668"]
   const containers = document.getElementsByClassName("container")
   for (const item of containers) {
     const offers = item.getElementsByClassName("offer")
@@ -50,34 +61,39 @@ function checkStock() {
       const offerName = offer.getElementsByClassName("name")[0].innerText
       const offerExternalid =
         offer.getElementsByClassName("externalid")[0].value
+      const externalIds = offerExternalid.match(/\d{4,5}/g)
+      const externalIdsv2 = externalIdToArr(offerExternalid)
+
       let offerStock = offer.getElementsByClassName("stock")[0]
       const fppStock = item.getElementsByClassName("fpp-stock")[0].innerHTML
       const fppCode = item.getElementsByClassName("fpp-code")[0].innerHTML
 
       if (
-        offerStock.value != fppStock &&
         fppStock != 0 &&
         checkValueIsInt(fppStock) &&
         !verGroup.includes(fppCode.substring(0, 2)) &&
         !verCode.includes(fppCode)
       ) {
         offerStock.focus()
-        if (offerExternalid.toString().trim() != fppCode.toString().trim()) {
-          if (
-            confirm(
-              fppCode +
-                "-" +
-                offerName +
-                " - " +
-                offerStock.value +
-                " > " +
-                fppStock
-            )
-          ) {
+        if (
+          externalIdsv2[0].code == fppCode.toString().trim() &&
+          offerStock.value * externalIdsv2[0].count != fppStock
+        ) {
+          setStockDbl(offerStock)
+        }
+
+        if (
+          externalIdsv2[0].code != fppCode.toString().trim() &&
+          offerStock.value != fppStock
+        ) {
+          const quest = confirm(
+            `${fppCode} - ${offerName} - ${offerStock.value} > ${Math.floor(
+              fppStock / externalIdsv2[0].count
+            )}`
+          )
+          if (quest) {
             setStockDbl(offerStock)
           }
-        } else {
-          setStockDbl(offerStock)
         }
       }
     }
@@ -103,6 +119,6 @@ function getEanFromSote(elem) {
     .then((res) => res.json())
     .then(({ man_code }) => {
       eanvalue = man_code != "" ? man_code : "brak EAN"
-      eancode.value = eanvalue
+      eancode.value = eanvalue.trim()
     })
 }

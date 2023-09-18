@@ -1,5 +1,7 @@
 <?php
-$pdo = new PDO('mysql:host=localhost;dbname=satserwis','root','');$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+include_once("../../database.class.php");
+$pdo = new DBconn();
+
 $fod = $_GET['fod'];
 
 $pdo->query('DELETE FROM newallegroorders WHERE fod="'.$fod.'"');
@@ -11,4 +13,3 @@ $pdo->query('DELETE FROM newallegromessage WHERE fod="'.$fod.'"');
 $pdo->query('DELETE FROM newallegrosurcharges WHERE fod="'.$fod.'"');
 
 header('Location: ../index.php');
-?>
