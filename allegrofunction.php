@@ -51,6 +51,42 @@ class AllegroOAuth2Client
 	}
 }
 
+class AllegroInterface
+{
+	protected $url = "https://api.allegro.pl";
+	protected $access_token = '';
+	protected $headersPublic = 'application/vnd.allegro.public.v1+json';
+	protected $headersBeta = 'application/vnd.allegro.beta.v1+json';
+
+	function __construct()
+	{
+		$this->access_token = $_COOKIE['tokenn'];
+	}
+
+	public function connect($method, $url, array $params = [], $headers = null)
+	{
+		$headers = (!is_null($headers)) ? $headers : $this->headersPublic;
+		$headers = ["Accept: {$headers}", "Content-Type: {$headers}", 'Authorization: Bearer ' . $this->access_token];
+		$curl = curl_init($url);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+		curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($params));
+		return json_decode(curl_exec($curl));
+	}
+}
+
+class Offers extends AllegroInterface
+{
+	private $endpoint = "/sale";
+
+	public function getOfferById($offerID)
+	{
+		$endpoint = $this->url . $this->endpoint . "/offers/{$offerID}";
+		return $this->connect("GET", $endpoint);
+	}
+}
+
 class AllegroServices
 {
 	protected $url = "https://api.allegro.pl";
