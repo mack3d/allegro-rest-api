@@ -1,6 +1,8 @@
 <?php
 include_once("../../../allegrofunction.php");
 
+$allegro = new AllegroServices();
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 $offset = $data['offset'];
@@ -55,18 +57,18 @@ function allCodesFromOffers($offers)
     return array_unique($allcodes);
 }
 
-function getOffers($limit, $offset, $sort, $status, $cenado, $cenaod, $offers_id, $name)
+function getOffers($allegro, $limit, $offset, $sort, $status, $cenado, $cenaod, $offers_id, $name)
 {
     $params = 'limit=' . $limit . '&offset=' . $offset . $sort . $status . $cenado . $cenaod . $name;
     $params = (!empty($offers_id)) ? $offers_id : $params;
-    $offers = allegro('GET', '/sale/offers?' . $params);
-    return (array)json_decode($offers);
+    $offers = $allegro->sale('GET', '/offers?' . $params);
+    return (array)$offers;
 }
 
-function lastSaleOffers($limit, $offset, $offers_id)
+function lastSaleOffers($allegro, $limit, $offset, $offers_id)
 {
     $params = 'limit=' . $limit . '&offset=' . $offset . '&fulfillment.status=PROCESSING';
-    $offers = allegro('GET', '/order/checkout-forms?' . $params);
+    $offers = $allegro->order('GET', '/checkout-forms?' . $params);
     $orders = json_decode($offers);
     $items_id = array();
     foreach ($orders->checkoutForms as $order) {
@@ -93,12 +95,12 @@ function getOffersOfCodes($codes)
 }
 
 if ($sortby == "sale.time") {
-    $offers_id = lastSaleOffers($limit, $offset, $sort, $status, $cenado, $cenaod, $offers_id, $name);
+    $offers_id = lastSaleOffers($allegro, $limit, $offset, $sort, $status, $cenado, $cenaod, $offers_id, $name);
 }
 if (!empty($codes)) {
     $response = getOffersOfCodes($codes);
 } else {
-    $response = getOffers($limit, $offset, $sort, $status, $cenado, $cenaod, $offers_id, $name);
+    $response = getOffers($allegro, $limit, $offset, $sort, $status, $cenado, $cenaod, $offers_id, $name);
     if ($utrzymaniowa > 0) {
         $original_codes = allOriginalCodesFromOffers($response['offers']);
         $response = getOffersOfCodes($original_codes);

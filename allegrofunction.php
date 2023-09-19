@@ -51,29 +51,51 @@ class AllegroOAuth2Client
 	}
 }
 
-class Allegro
+class AllegroServices
 {
+	protected $url = "https://api.allegro.pl";
+	protected $access_token = '';
+	protected $headersAcceptPublic = 'application/vnd.allegro.public.v1+json';
+	protected $headersAcceptBeta = 'application/vnd.allegro.beta.v1+json';
+
 	function __construct()
 	{
-		$this->url = "https://api.allegro.pl";
 		$this->access_token = $_COOKIE['tokenn'];
 	}
 
 	public function order($method = 'GET', $endpoint = '/checkout-forms', array $params = [])
 	{
 		$endpoint = $this->url . '/order' . $endpoint;
-		return $this->connect($method, $endpoint, $params);
+		return $this->connect($method, $endpoint, $params, $this->headersAcceptPublic);
+	}
+
+	public function billing($method = 'GET', $endpoint = '', array $params = [])
+	{
+		$endpoint = $this->url . '/billing' . $endpoint;
+		return $this->connect($method, $endpoint, $params, $this->headersAcceptPublic);
+	}
+
+	public function orderBeta($method = 'GET', $endpoint = '/checkout-forms', array $params = [])
+	{
+		$endpoint = $this->url . '/order' . $endpoint;
+		return $this->connect($method, $endpoint, $params, $this->headersAcceptBeta);
 	}
 
 	public function sale($method = 'GET', $endpoint = '/offers', array $params = [])
 	{
 		$endpoint = $this->url . '/sale' . $endpoint;
-		return $this->connect($method, $endpoint, $params);
+		return $this->connect($method, $endpoint, $params, $this->headersAcceptPublic);
 	}
 
-	public function connect($method, $url, $params)
+	public function other($method = 'GET', $endpoint = '', array $params = [])
 	{
-		$headers = ['Accept: application/vnd.allegro.public.v1+json', 'Authorization: Bearer ' . $this->access_token];
+		$endpoint = $this->url . $endpoint;
+		return $this->connect($method, $endpoint, $params, $this->headersAcceptPublic);
+	}
+
+	public function connect($method, $url, $params, $accept)
+	{
+		$headers = ["Accept: {$accept}", "Content-Type: {$accept}", 'Authorization: Bearer ' . $this->access_token];
 		$curl = curl_init($url);
 		curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
@@ -205,14 +227,14 @@ function gettaxid($id)
 
 function getalloffers($status = "ACTIVE")
 {
+	$allegro = new AllegroServices();
 	$status = ($status != "ALL") ? '&publication.status=' . $status : '';
 	$alloffers = array();
 	$i = 0;
 	$limit = 1000;
 	while (true) {
 		$offset = $i * $limit;
-		$aukcje = getRequestPublic('https://api.allegro.pl/sale/offers?limit=' . $limit . $status . '&offset=' . $offset);
-		$aukcje = json_decode($aukcje);
+		$aukcje = $allegro->sale("GET", "/offers?limit={$limit}{$status}&offset={$offset}");
 		if ($aukcje->totalCount < $offset) {
 			break;
 		}
@@ -224,8 +246,8 @@ function getalloffers($status = "ACTIVE")
 
 function getShipping($id = "")
 {
-	$i = getRequestPublic('https://api.allegro.pl/sale/shipping-rates');
-	$i = json_decode($i);
+	$allegro = new AllegroServices();
+	$i = $allegro->sale("GET", '/shipping-rates');
 	$re = '';
 	if ($id == '') {
 		$re = $i->shippingRates;

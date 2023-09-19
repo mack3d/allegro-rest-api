@@ -57,9 +57,6 @@
 	include_once("./orders.class.php");
 	include_once("./database.class.php");
 
-	mb_internal_encoding('UTF-8');
-	mb_http_output('UTF-8');
-
 	session_start();
 
 	@$szukajtext = $_GET['search'];
@@ -76,7 +73,7 @@
 	} else {
 		$logowanie = '<a id="getnew" class="loguj" href="?connectallegro=isat" onclick="blokuj()">Pobierz nowe</a>';
 	}
-
+	$allegro = new AllegroServices();
 	$pdo = new DBconn();
 
 	$fodadd = $pdo->prepare('INSERT INTO newallegroorders (fod,messagetoseller,buyerlogin,statusfod,paymentid,paymenttype,paymentprovider,paymentfinished,paymentpaid,deliverymethod,itemid,summary,bougthtime,filledintime,readytime) VALUES (:fod,:messagetoseller,:buyerlogin,:statusfod,:paymentid,:paymenttype,:paymentprovider,:paymentfinished,:paymentpaid,:deliverymethod,:itemid,:summary,:bougthtime,:filledintime,:readytime)');
@@ -361,21 +358,18 @@
 		}
 	}
 
-	function customerReturns($zwrot)
+	function customerReturns($allegro, $zwrot)
 	{
 		$r = '';
-		$returns = getRequest('https://api.allegro.pl/order/customer-returns?parcels.sender.phoneNumber=' . $zwrot);
-		$return = json_decode($returns);
+		$return = $allegro->orderBeta('GET', '/customer-returns?parcels.sender.phoneNumber=' . $zwrot);
 		if (!isset($return->errors)) {
 			if ($return->count == 0) {
-				$returns = getRequest('https://api.allegro.pl/order/customer-returns?referenceNumber=' . strtoupper($zwrot));
-				$return = json_decode($returns);
+				$return = $allegro->orderBeta('GET', '/customer-returns?referenceNumber=' . strtoupper($zwrot));
 			}
 		}
 		if (!isset($return->errors)) {
 			if ($return->count == 0) {
-				$returns = getRequest('https://api.allegro.pl/order/customer-returns?parcels.waybill=' . $zwrot);
-				$return = json_decode($returns);
+				$return = $allegro->orderBeta('GET', '/customer-returns?parcels.waybill=' . $zwrot);
 			}
 		}
 
@@ -388,6 +382,7 @@
 		}
 		return $r;
 	}
+
 
 	$szukanefody = '';
 	if ($szukajtext != '') {
@@ -445,7 +440,7 @@
 			$szukanefody = $szukajphonenumber->fetchall()[0]['fody'];
 		} elseif (preg_match('/^(zwrot|ZWROT)\s.+$/', $szukajtext)) {
 			$szukajtext = explode(' ', $szukajtext);
-			$szukanefody = customerReturns($szukajtext[1]);
+			$szukanefody = customerReturns($allegro, $szukajtext[1]);
 		} elseif (strtolower($szukajtext) == "wielopaki") {
 			$szukajwielopak->execute();
 			$szukanefody = $szukajwielopak->fetchall()[0]['fody'];
@@ -468,13 +463,11 @@
 <li><a href="billing/"><img src="./img/payu.png"></a></li>
 <li><a onclick="przesylki()"><img src="./img/przesylki.png"></a></li>
 <li><a onclick="dpd()"><img src="./img/dpd.png"></a></li>
-</nav>';
+</nav><div id="gora">';
 
-	echo '<div id="gora">';
 	$wtrakcie = '';
 	if (isset($_COOKIE['tokenn'])) {
-		$orderswait = getRequestPublic('https://api.allegro.pl/order/checkout-forms?status=FILLED_IN&fulfillment.status=NEW');
-		$orderswait = json_decode($orderswait);
+		$orderswait = $allegro->order('GET', '/checkout-forms?status=FILLED_IN&fulfillment.status=NEW');
 		if ($orderswait->count != 0) {
 			foreach ($orderswait->checkoutForms as $r) {
 				$isduplicat = duplicat($r->buyer->login, $r->lineItems[0]->boughtAt);
@@ -485,8 +478,8 @@
 				$wtrakcie .= '<tr ' . $colorduplicat . ' onclick="czekamyallegro(\'' . $r->id . '\')"><td>' . date("y-m-d H:i:s", strtotime($r->lineItems[0]->boughtAt)) . '</td><td>' . $r->buyer->login . '</td><td>' . $r->buyer->firstName . ' ' . $r->buyer->lastName . '</td></tr>';
 			}
 		}
-		$ordersbuy = getRequestPublic('https://api.allegro.pl/order/checkout-forms?status=BOUGHT&fulfillment.status=NEW');
-		$ordersbuy = json_decode($ordersbuy);
+
+		$ordersbuy = $allegro->order('GET', '/checkout-forms?status=BOUGHT&fulfillment.status=NEW');
 		if ($ordersbuy->count != 0) {
 			foreach ($ordersbuy->checkoutForms as $r) {
 				$isduplicat = duplicat($r->buyer->login, $r->lineItems[0]->boughtAt);
@@ -498,15 +491,13 @@
 			}
 		}
 
-		/* zamówienia do zmiany statusy na anulowane i ewentualnie zwrotu kasy */
 		if ($wtrakcie != '') {
-			echo '<table class="czekamy"><thead><tr><td colspan="4">Czekamy na wpłatę: (' . ($orderswait->count + $ordersbuy->count) . ')</td></tr></thead><tbody>';
+			echo '<table class="czekamy"><thead><tr><td colspan="4">Czekamy: (' . ($orderswait->count + $ordersbuy->count) . ')</td></tr></thead><tbody>';
 			echo $wtrakcie;
 			echo '</tbody></table>';
 		}
 
-		$ordersnewcanceled = getRequestPublic('https://api.allegro.pl/order/checkout-forms?status=CANCELLED&fulfillment.status=NEW');
-		$ordersnewcanceled = json_decode($ordersnewcanceled);
+		$ordersnewcanceled = $allegro->order('GET', '/checkout-forms?status=CANCELLED&fulfillment.status=NEW');
 		$doanulowania = '';
 		if ($ordersnewcanceled->count > 0) {
 			foreach ($ordersnewcanceled->checkoutForms as $r) {
@@ -521,14 +512,9 @@
 			echo $doanulowania;
 			echo '</tbody></table>';
 		}
-		/**********************************************************************/
 	}
 
-
-
-
 	$page = $_GET['page'] ?? 0;
-
 	$orders = new orders();
 
 	if ($szukanefody == '') {

@@ -15,12 +15,13 @@ function bladdodziennika($wpis)
 
 include_once("../allegrofunction.php");
 include_once("../../database.class.php");
+
 $pdo = new DBconn();
+$allegro = new AllegroServices();
 
 $fodchf = '';
 try {
-    $fodchf = getRequestPublic('https://api.allegro.pl/order/checkout-forms/' . $fod);
-    $fodchf = json_decode($fodchf);
+    $fodchf = $allegro->order("GET", "/checkout-forms/{$fod}")
 } catch (PDOException $e) {
     echo ('Odswiez pobieranie fod-a ' . $e->getMessage());
 }
@@ -70,8 +71,7 @@ function transactionid($fod)
 $test->bindValue(":fod", $fod, PDO::PARAM_STR);
 $test->execute();
 try {
-    $fodcf = getRequestPublic('https://api.allegro.pl/order/checkout-forms/' . $fod);
-    $fodcf = json_decode($fodcf);
+    $fodcf = $allegro->order("GET", "/checkout-forms/{$fod}")
     if (count($fodcf->surcharges) != $test->rowCount()) {
         foreach ($fodcf->surcharges as $surcharges) {
             $tests->bindValue(":fod", $fod, PDO::PARAM_STR);

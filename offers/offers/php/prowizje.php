@@ -1,24 +1,22 @@
 <?php
 include_once("../../../allegrofunction.php");
 
+$allegro = new AllegroServices();
+
 $offerids = substr($_POST['offerids'],0,-1);
 $offerids = explode(",",$offerids);
 
 $multi = array();
 foreach ($offerids as $offer){
-    $i = getRequestPublic('https://api.allegro.pl/sale/offers/'.$offer);
-    $i = array("offer"=>json_decode($i));
-    $p = postPublic('https://api.allegro.pl/pricing/offer-fee-preview',$i);
-    $p = json_decode($p);
+    $i = $allegro->sale("GET", "/offers/{$offer}")
+    $i = array("offer"=>$i);
+    $p = $allegro->other("POST", "/pricing/offer-fee-preview", $i);
 
-    $quotes = getRequestPublic('https://api.allegro.pl/pricing/offer-quotes?offer.id='.$offer);
-    $quotes = json_decode($quotes);
+    $quotes = $allegro->other("GET", "/pricing/offer-quotes?offer.id={$offer}");
 
-    $is_smart = allegro('GET', '/sale/offers/'.$offer.'/smart');
-    $is_smart = json_decode($is_smart);
+    $is_smart = $allegro->sale('GET', "/offers/{$offer}/smart");
 
     array_push($multi, array("id" => $offer,"fee" => $p, "quotes" => $quotes, "is_smart" => $is_smart));
 }
 
 print_r(json_encode($multi));
-?>

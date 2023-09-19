@@ -1,6 +1,5 @@
 <?php
 $categoryid = $_GET['categoryid'];
-
-$i = getRequestPublic('https://api.allegro.pl/sale/categories/'.$categoryid.'/parameters');
-print_r($i);
-?>
+$allegro = new AllegroServices();
+$i = $allegro->sale("GET", "/categories/{$categoryid}/parameters");
+print_r(json_decode($i));

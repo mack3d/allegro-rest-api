@@ -1,12 +1,13 @@
 <?php
 include_once("../../../allegrofunction.php");
 
+$allegro = new AllegroServices();
+
 $data = json_decode(file_get_contents('php://input'), true);
 $id = $data['offer'];
 $externalid = $data['externalid'];
 
-$i = getRequestPublic('https://api.allegro.pl/sale/offers/' . $id);
-$i = json_decode($i);
+$i = $allegro->sale("GET", "/offers/{$id}");
 
 $externalid = array(
     "id" => $externalid,
@@ -21,6 +22,6 @@ $i->tax->subject = (isset($tax->subject->id)) ? $tax->subject->id : '';
 $i->tax->id = $tax->id;
 
 $i = json_decode(json_encode($i), true);
-$j = putPublic('https://api.allegro.pl/sale/offers/' . $id, $i);
+$j = $allegro->sale("PUT", "/offers/{$id}", $i);
 
-print_r($j);
+print_r(json_encode($j));

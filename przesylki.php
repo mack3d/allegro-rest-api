@@ -6,22 +6,22 @@ include_once("./allegrofunction.php");
 include_once("./database.class.php");
 
 $pdo = new DBconn();
+$allegro = new AllegroServices();
 
-$fodybeznum = $pdo->prepare('SELECT fod FROM newallegroorders WHERE statusfod="COMPLETING" AND deliverymethod NOT LIKE :deliverymethod');
+$orders = $pdo->prepare('SELECT fod FROM newallegroorders WHERE statusfod="COMPLETING" AND deliverymethod NOT LIKE :deliverymethod');
 $delivery = $pdo->prepare('UPDATE newallegroorders SET statusfod="SENT", shipmentsnumber=:shipmentsnumber, shipmenttime=:shipmenttime WHERE fod=:fod');
 
 $countOfAddNumbers = 0;
 
 if (isset($_COOKIE['tokenn'])) {
-	$fodybeznum->bindValue(":deliverymethod", "%osobisty%", PDO::PARAM_STR);
-	$fodybeznum->execute();
-	foreach ($fodybeznum->fetchAll() as $fodbeznum) {
-		$shipments = getRequestPublic('https://api.allegro.pl/order/checkout-forms/' . $fodbeznum['fod'] . '/shipments');
-		$odp = json_decode($shipments);
-		if (isset($odp->shipments)) {
-			if (count($odp->shipments) != 0) {
-				$delivery->bindValue(":shipmentsnumber", $odp->shipments[0]->waybill, PDO::PARAM_STR);
-				$delivery->bindValue(":shipmenttime", $odp->shipments[0]->createdAt, PDO::PARAM_STR);
+	$orders->bindValue(":deliverymethod", "%osobisty%", PDO::PARAM_STR);
+	$orders->execute();
+	foreach ($orders->fetchAll() as $fodbeznum) {
+		$shipData = $allegro->order('GET', "/checkout-forms/{$fodbeznum['fod']}/shipments");
+		if (isset($shipData->shipments)) {
+			if (count($shipData->shipments) != 0) {
+				$delivery->bindValue(":shipmentsnumber", $shipData->shipments[0]->waybill, PDO::PARAM_STR);
+				$delivery->bindValue(":shipmenttime", $shipData->shipments[0]->createdAt, PDO::PARAM_STR);
 				$delivery->bindValue(":fod", $fodbeznum['fod'], PDO::PARAM_STR);
 				$delivery->execute();
 				++$countOfAddNumbers;

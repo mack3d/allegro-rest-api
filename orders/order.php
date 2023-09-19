@@ -17,44 +17,42 @@
 	include_once("../../database.class.php");
 
 	$pdo = new DBconn();
+	$allegro = new AllegroServices();
 
-	if (isset($_GET['fod'])) $numer_fod = $_GET['fod'];
+	if (isset($_GET['fod'])) $fod_number = $_GET['fod'];
 
-	if (!isset($numer_fod) && isset($_GET['paymentid'])) {
+	if (!isset($fod_number) && isset($_GET['paymentid'])) {
 		$order = $pdo->prepare('SELECT fod FROM newallegroorders WHERE paymentid=:paymentid');
 		$order->bindValue(":paymentid", $_GET['paymentid'], PDO::PARAM_STR);
 		$order->execute();
 		$order = $order->fetch();
-		$numer_fod = $order['fod'];
+		$fod_number = $order['fod'];
 	}
 
-	$allegrofod = getRequestPublic('https://api.allegro.pl/order/checkout-forms/' . $numer_fod);
-	$allegrofod = json_decode($allegrofod);
+	$allegrofod = $allegro->order("GET", "/checkout-forms/{$fod_number}");
 
-	$orderbilling = getRequestPublic('https://api.allegro.pl/billing/billing-entries?order.id=' . $numer_fod);
-	$orderbilling = json_decode($orderbilling);
+	$orderbilling = $allegro->billing("GET", "/billing-entries?order.id={$fod_number}");
 
-	function zwrot($orderid)
+	function zwrot($allegro, $orderid)
 	{
-		$res = getRequest('https://api.allegro.pl/order/customer-returns?orderId=' . $orderid);
-		$res = json_decode($res);
+		$res = $allegro->orderBeta("GET", "/customer-returns?orderId={$orderid}");
 		return $res->count;
 	}
 
 	$order = $pdo->prepare('SELECT * FROM newallegroorders WHERE fod=:fod');
-	$order->bindValue(":fod", $numer_fod, PDO::PARAM_STR);
+	$order->bindValue(":fod", $fod_number, PDO::PARAM_STR);
 	$order->execute();
 	$order = $order->fetch();
 
 	$buyer = $pdo->prepare('SELECT * FROM newallegrobuyer WHERE fod=:fod');
-	$buyer->bindValue(":fod", $numer_fod, PDO::PARAM_STR);
+	$buyer->bindValue(":fod", $fod_number, PDO::PARAM_STR);
 	$buyer->execute();
 	$buyer = $buyer->fetch();
 
 	$kupujacy = $buyer['username'] . '</p><p>' . $buyer['street'] . '</p><p>' . $buyer['postcode'] . ' ' . $buyer['city'] . '</p><p>' . $buyer['phoneNumber'];
 
 	$invoice = $pdo->prepare('SELECT * FROM newallegroinvoice WHERE fod=:fod');
-	$invoice->bindValue(":fod", $numer_fod, PDO::PARAM_STR);
+	$invoice->bindValue(":fod", $fod_number, PDO::PARAM_STR);
 	$invoice->execute();
 	$faktura = '';
 	if ($invoice->rowCount() != 0) {
@@ -72,7 +70,7 @@
 	}
 
 	$delivery = $pdo->prepare('SELECT * FROM newallegrodelivery WHERE fod=:fod');
-	$delivery->bindValue(":fod", $numer_fod, PDO::PARAM_STR);
+	$delivery->bindValue(":fod", $fod_number, PDO::PARAM_STR);
 	$delivery->execute();
 	if ($delivery->rowCount() > 0) {
 		$delivery = $delivery->fetch();
@@ -92,12 +90,12 @@
 	}
 
 	$message = $pdo->prepare('SELECT * FROM newallegromessage WHERE fod=:fod');
-	$message->bindValue(":fod", $numer_fod, PDO::PARAM_STR);
+	$message->bindValue(":fod", $fod_number, PDO::PARAM_STR);
 	$message->execute();
 	$message = ($message->rowcount() > 0) ? $message->fetch()['messagetoseller'] : '';
 
 	$surcharges = $pdo->prepare('SELECT * FROM newallegrosurcharges WHERE fod=:fod');
-	$surcharges->bindValue(":fod", $numer_fod, PDO::PARAM_STR);
+	$surcharges->bindValue(":fod", $fod_number, PDO::PARAM_STR);
 	$surcharges->execute();
 	$surcharges = $surcharges->fetch();
 
@@ -201,11 +199,11 @@
 	echo '</div>';
 	echo '<nav class="navb">
 <li>';
-	if (zwrot($numer_fod) > 0) {
-		echo '<a href="pdfzwrot.php?fod=' . $numer_fod . '" class="klik">Dokument zwrotu</a>';
+	if (zwrot($allegro, $fod_number) > 0) {
+		echo '<a href="pdfzwrot.php?fod=' . $fod_number . '" class="klik">Dokument zwrotu</a>';
 	}
-	$deletefod = '<a class="klik" href="delete.php?fod=' . $numer_fod . '")">Usuń</a>';
-	echo '<a onclick="surcharges(\'' . $numer_fod . '\')" class="klik">Odśwież</a></li>
+	$deletefod = '<a class="klik" href="delete.php?fod=' . $fod_number . '")">Usuń</a>';
+	echo '<a onclick="surcharges(\'' . $fod_number . '\')" class="klik">Odśwież</a></li>
 </nav>';
 	echo '<div id="fpp">';
 	echo '<div id="fpp">';

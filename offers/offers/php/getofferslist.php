@@ -2,6 +2,8 @@
 include_once("../../../allegrofunction.php");
 include_once("../../../../database.class.php");
 
+$allegro = new AllegroServices();
+
 $offset = $_POST['offset'];
 $status = $_POST['status'];
 $sortby = $_POST['sort'];
@@ -50,28 +52,24 @@ if ($sortby != "events") {
         } else {
             $offerids = explode(' ', $offerids);
             foreach ($offerids as $id) {
-                $offer = getRequestPublic('https://api.allegro.pl/sale/offers?offer.id=' . $id);
-                $offer = json_decode($offer);
+                $offer = $allegro->sale("GET", "/offers?offer.id={$id}");
                 array_push($szukane, $offer->offers[0]);
             }
         }
 
         $i = json_decode(json_encode(array('offers' => $szukane, 'totalCount' => count($alloffers), 'count' => count($szukane))));
     } else {
-        $i = getRequestPublic('https://api.allegro.pl/sale/offers?limit=' . $limit . '&offset=' . $offset . $sort . $status . $cenado . $cenaod);
-        $i = json_decode($i);
+        $i = $allegro->sale("GET", "/offers?limit={$limit}&offset={$offset}{$sort}{$status}{$cenado}{$cenaod}");
     }
 } else {
-    $events = getRequestPublic('https://api.allegro.pl/sale/offer-events?type=OFFER_STOCK_CHANGED&limit=1000');
-    $events = json_decode($events);
+    $events = $allegro->sale("GET", '/offer-events?type=OFFER_STOCK_CHANGED&limit=1000');
     $offerslist = array();
     $checkids = array(); //sprawdza czy aukcje o podanym id już jest na liście
 
     $events = array_reverse($events->offerEvents);
     for ($e = $offset; $e < count($events); $e++) {
         $event = $events[$e];
-        $offer = getRequestPublic('https://api.allegro.pl/sale/offers?offer.id=' . $event->offer->id);
-        $offer = json_decode($offer);
+        $offer = $allegro->sale("GET", "/offers?offer.id={$event->offer->id}");
         if ($offer->count != 0) { //aukccja moze być ukryta i wtedy jej nie można pobrać
             if (!in_array($event->offer->id, $checkids)) { //sprawza czy nie ma już aukcji o podanym id na liście - nie checmy dubli
                 array_push($checkids, $offer->offers[0]->id);

@@ -7,6 +7,8 @@ span{
 <?php
 include_once("../../../allegrofunction.php");
 
+$allegro = new AllegroServices();
+
 if (!isset($_COOKIE['sklep'])) {
     $sesja = new SoapClient('https://sklep.satserwis.pl/backend.php/webapi/soap?wsdl');
     $log = new stdClass();
@@ -14,9 +16,7 @@ if (!isset($_COOKIE['sklep'])) {
     $log->password = getenv('SOP');
     setcookie('sklep', $sesja->doLogin($log)->hash, time() + 1800);
 }
-
-$up = getRequestPublic('https://api.allegro.pl/sale/offers/unfilled-parameters?limit=1000');
-$up = json_decode($up);
+$up = $allegro->sale("GET", '/offers/unfilled-parameters?limit=1000');
 
 function dodajean($id, $ean)
 {
@@ -60,10 +60,9 @@ function getProductData($code)
     }
 }
 
-function poka($offerid)
+function poka($allegro, $offerid)
 {
-    $offer = getRequestPublic('https://api.allegro.pl/sale/offers/' . $offerid->id);
-    $offer = json_decode($offer);
+    $offer = $allegro->sale("/offers/{$offerid->id}");
     /*$ean = '';
     if (isset($offer->external->id)){
         $ean = getProductData($offer->external->id);
@@ -77,7 +76,7 @@ function poka($offerid)
     echo '</li>';
 }
 foreach ($up->offers as $offer) {
-    poka($offer);
+    poka($allegro, $offer);
 }
 
 ?>

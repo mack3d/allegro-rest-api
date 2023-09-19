@@ -1,10 +1,11 @@
 <?php
 include_once("../../../allegrofunction.php");
 
+$allegro = new AllegroServices();
+
 $data = json_decode(file_get_contents('php://input'), true);
 $id = $data['id'];
 
-$offer = getRequestPublic('https://api.allegro.pl/sale/offers/'.$id);
-$offer = json_decode($offer);
-    
+$offer = $allegro->sale("/offers/{$id}");
+
 echo json_encode($offer);
