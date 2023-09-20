@@ -1,12 +1,1 @@
-2023-09-18T15:06:12+02:00 odswiez delivery SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'fod' cannot be null
- 
-2023-09-18T15:28:27+02:00 odswiez delivery SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'fod' cannot be null
- 
-2023-09-18T15:28:34+02:00 odswiez delivery SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'fod' cannot be null
- 
-2023-09-18T15:32:09+02:00 odswiez delivery SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'fod' cannot be null
- 
-2023-09-18T15:35:04+02:00 odswiez delivery SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'fod' cannot be null
- 
-2023-09-18T15:35:53+02:00 odswiez delivery SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'fod' cannot be null
- 
+
