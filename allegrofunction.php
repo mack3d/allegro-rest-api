@@ -51,7 +51,7 @@ class AllegroOAuth2Client
 	}
 }
 
-class AllegroInterface
+abstract class Allegro
 {
 	protected $url = "https://api.allegro.pl";
 	protected $access_token = '';
@@ -60,7 +60,7 @@ class AllegroInterface
 
 	function __construct()
 	{
-		$this->access_token = $_COOKIE['tokenn'];
+		if (isset($_COOKIE['tokenn'])) $this->access_token = $_COOKIE['tokenn'];
 	}
 
 	public function connect($method, $url, array $params = [], $headers = null)
@@ -76,7 +76,7 @@ class AllegroInterface
 	}
 }
 
-class Offers extends AllegroInterface
+class Offers extends Allegro
 {
 	private $endpoint = "/sale";
 
@@ -96,7 +96,7 @@ class AllegroServices
 
 	function __construct()
 	{
-		$this->access_token = $_COOKIE['tokenn'];
+		if (isset($_COOKIE['tokenn'])) $this->access_token = $_COOKIE['tokenn'];
 	}
 
 	public function order($method = 'GET', $endpoint = '/checkout-forms', array $params = [])
@@ -144,6 +144,7 @@ class AllegroServices
 
 function checkOrders($params = array())
 {
+
 	$other = '';
 	foreach ($params as $k => $val) {
 		if (is_array($val)) {
@@ -154,10 +155,12 @@ function checkOrders($params = array())
 			$other .= $k . '=' . $val . '&';
 		}
 	}
-	$ordersnew = getRequestPublic('https://api.allegro.pl/order/checkout-forms?' . substr($other, 0, -1));
-	return json_decode($ordersnew);
+
+	$allegro = new AllegroServices();
+	return $allegro->order("GET", "/checkout-forms?" . substr($other, 0, -1));
 }
 
+/*
 function allegro($method, $endpoint, array $params = [])
 {
 	$url = "https://api.allegro.pl{$endpoint}";
@@ -227,7 +230,7 @@ function patch($uri, array $params = [])
 	$data = json_encode($params);
 	curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
 	return curl_exec($curl);
-}
+}*/
 
 function uuid()
 {
@@ -246,8 +249,8 @@ function uuid()
 
 function gettaxid($id)
 {
-	$i = getRequestPublic('https://api.allegro.pl/sale/tax-settings?category.id=' . $id);
-	$i = json_decode($i);
+	$allegro = new AllegroServices();
+	$i = $allegro->sale("GET", "/tax-settings?category.id={$id}");
 	$wybieram = '';
 	if (count($i->settings) > 1) {
 		foreach ($i->settings as $tax) {

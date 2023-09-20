@@ -11,7 +11,6 @@ async function getproduct(elem) {
     })
   })
   const data = await res.json()
-  console.log(data)
 }
 
 function getProductFromSote() {
@@ -101,7 +100,6 @@ function getProductFromSote() {
       if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
         var odpowiedz = xmlhttp.responseText
         resp = JSON.parse(odpowiedz)
-        console.log(resp)
         productdata = resp.sote
         fpp = resp.fpp[0]
         names.value = productdata.name
@@ -157,7 +155,6 @@ function replaceTytul(desc) {
 }
 
 function replaceHtml(desc) {
-  console.log(desc.split("<br />"))
   desc = desc.replace(/(<(!--[^>]+)>)/gi, "")
   desc = desc.replace(/(<(div[^>]+)>)/gi, "")
   desc = desc.replace(/(<([^>]+)div>)/gi, "")
@@ -223,7 +220,6 @@ function createDraft() {
   }
   xmlhttp.onreadystatechange = function () {
     if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-      //console.log(xmlhttp.responseText);
       var odpowiedz = JSON.parse(xmlhttp.responseText)
       if (typeof odpowiedz.errors != "undefined") {
         for (i = 0; i < odpowiedz.errors.length; i++) {
@@ -252,7 +248,6 @@ function createDraft() {
 
 function getallegrocategory() {
   var allegrocategory = document.getElementById("allegrocategory")
-  console.log(allegrocategory)
   var allegrocategoryname = document.getElementById("allegrocategoryname")
   if (allegrocategory.value.length > 3) {
     if (window.XMLHttpRequest) {
@@ -271,7 +266,6 @@ function getallegrocategory() {
           }
           sciezkacat = resp[i].name + sciezkacat
         }
-        console.log(sciezkacat)
         allegrocategoryname.value = sciezkacat
       }
     }
@@ -300,7 +294,6 @@ function allegrocategoryparametry() {
         var odpowiedz = xmlhttp.responseText
         resp = JSON.parse(odpowiedz)
         parametry = resp.parameters
-        console.log(parametry)
         var inserthtmlparam = ""
         for (var i = 0; i < parametry.length; i++) {
           typ = "input"

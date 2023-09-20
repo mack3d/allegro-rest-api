@@ -1,9 +1,7 @@
-<pre><?php
+<?php
 include_once("../../allegrofunction.php");
 
-$delivery = getRequestPublic('https://api.allegro.pl/sale/shipping-rates');
-$delivery = json_decode($delivery);
+$allegro = new AllegroServices();
+$delivery = $allegro->sale("GET", '/shipping-rates');
 
-
-print_r($delivery);
-?>
+print_r(json_encode($delivery));

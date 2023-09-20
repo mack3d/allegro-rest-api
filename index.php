@@ -240,12 +240,11 @@
 
 	function surchargesadd($fodid, $surcharges)
 	{
-		global $pdo, $surchargesadd, $surchargesupd;
+		global $pdo, $allegro, $surchargesadd, $surchargesupd;
 		$surchargesadd->bindValue(':fod', $fodid, PDO::PARAM_STR);
 
 		foreach ($surcharges as $surcharge) {
-			$mapapiid = getRequestPublic('https://api.allegro.pl/payments/payment-id-mappings?paymentId=' . $surcharge->id);
-			$mapapiid = json_decode($mapapiid);
+			$mapapiid = $allegro->other("GET", "/payments/payment-id-mappings?paymentId={$surcharge->id}");
 			$transactionid = (!isset($mapapiid->errors)) ? $transactionid = $mapapiid->transactionId : NULL;
 
 			$surchargesadd->bindValue(':id', $surcharge->id, PDO::PARAM_STR);

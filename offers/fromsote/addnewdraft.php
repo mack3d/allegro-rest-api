@@ -1,17 +1,17 @@
 <?php
 include_once("../../allegrofunction.php");
 $postdata = file_get_contents("php://input");
-$odebranedane = json_decode($postdata);
+$getData = json_decode($postdata);
 
-$code = $odebranedane->code;
-$names = $odebranedane->names;
-$short_description = $odebranedane->short_description;
-$description = $odebranedane->description;
-$price = $odebranedane->price;
-$man_code = $odebranedane->man_code;
-$id = $odebranedane->id;
-$allegrocategory = $odebranedane->allegrocategory;
-$stock = $odebranedane->stock;
+$code = $getData->code;
+$names = $getData->names;
+$short_description = $getData->short_description;
+$description = $getData->description;
+$price = $getData->price;
+$man_code = $getData->man_code;
+$id = $getData->id;
+$allegrocategory = $getData->allegrocategory;
+$stock = $getData->stock;
 
 function postImage($image)
 {
@@ -139,5 +139,6 @@ $draft = array(
     "language" => "pl-PL"
 );
 
-$i = postPublic('https://api.allegro.pl/sale/offers', $draft);
-print_r($i);
+$allegro = new AllegroServices();
+$i = $allegro->sale("POST", '/offers', $draft);
+print_r(json_encode($i));

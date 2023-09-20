@@ -15,8 +15,7 @@ foreach ($offer_ids as $offer) {
 
     $q = $allegro->other("GET", "/pricing/offer-quotes?offer.id={$offer}");
 
-    $is_smart = allegro('GET', '/sale/offers/' . $offer . '/smart');
-    $is_smart = json_decode($is_smart);
+    $is_smart = $allegro->sale('GET', "/offers/{$offer}/smart");
 
     array_push($res, array("id" => $offer, "feePreview" => $p, "quotes" => $q, "isSmart" => $is_smart->classification->fulfilled, "shippingRatesId" => $i['offer']->delivery->shippingRates->id));
 }
