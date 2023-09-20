@@ -1,12 +1,6 @@
 <?php
-$pdo = new PDO('mysql:host=localhost;dbname=satserwis;charset=utf8mb4','root','');$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-$pdo->query('CREATE TABLE newallegroevents (
-    id BIGINT(40) NOT NULL UNIQUE,
-    fod VARCHAR(38) NOT NULL,
-    typeevent VARCHAR(22) NOT NULL,
-    occurredat DATETIME NOT NULL
-    )');
+include_once("../database.class.php");
+$pdo = new DBconn();
 
 $pdo->query('CREATE TABLE newallegroorders (
     fod VARCHAR(38) NOT NULL UNIQUE,
@@ -94,5 +88,3 @@ $pdo->query('CREATE TABLE newallegrosurcharges (
     finishedat DATETIME NULL,
     price FLOAT NULL
     )');
-
-?>

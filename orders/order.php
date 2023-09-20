@@ -16,6 +16,97 @@
 	include_once("./returnsInfo.php");
 	include_once("../../database.class.php");
 
+	class Order extends db
+	{
+		protected $orderID = '';
+		public $order = '';
+		public $items = '';
+		public $invoice = false;
+		public $buyer = '';
+		public $delivery = '';
+		public $message = false;
+		public $surcharges = false;
+
+		public function __construct($orderID)
+		{
+			parent::__construct();
+			$this->orderID = $orderID;
+			$this->getOrder();
+			$this->getItems();
+			$this->getInvoice();
+			$this->getbuyer();
+			$this->getDelivery();
+			$this->getMessage();
+			$this->getSurcharges();
+		}
+
+		public function __get($props)
+		{
+			if (property_exists(__CLASS__, $props)) {
+				return $this->{$props};
+			} else {
+				return null;
+			}
+		}
+
+		private function getOrder()
+		{
+			$stmt = $this->con->prepare('SELECT * FROM newallegroorders WHERE fod = :fod');
+			$stmt->bindValue("fod", $this->orderID, PDO::PARAM_STR);
+			$stmt->execute();
+			$this->order = $stmt->fetch();
+		}
+
+		private function getInvoice()
+		{
+			$stmt = $this->con->prepare('SELECT * FROM newallegroinvoice WHERE fod = :fod');
+			$stmt->bindValue("fod", $this->orderID, PDO::PARAM_STR);
+			$stmt->execute();
+			$this->invoice = ($stmt->rowCount() > 0) ? $stmt->fetch() : false;
+		}
+
+		private function getItems()
+		{
+			$stmt = $this->con->prepare('SELECT * FROM newallegrolineitems WHERE fod = :fod');
+			$stmt->bindValue("fod", $this->orderID, PDO::PARAM_STR);
+			$stmt->execute();
+			$this->items = $stmt->fetchAll();
+		}
+
+		private function getBuyer()
+		{
+			$stmt = $this->con->prepare('SELECT * FROM newallegrobuyer WHERE fod = :fod');
+			$stmt->bindValue("fod", $this->orderID, PDO::PARAM_STR);
+			$stmt->execute();
+			$this->buyer = $stmt->fetch();
+		}
+
+		private function getDelivery()
+		{
+			$stmt = $this->con->prepare('SELECT * FROM newallegrodelivery WHERE fod = :fod');
+			$stmt->bindValue("fod", $this->orderID, PDO::PARAM_STR);
+			$stmt->execute();
+			$this->delivery = $stmt->fetch();
+		}
+
+		private function getMessage()
+		{
+			$stmt = $this->con->prepare('SELECT * FROM newallegromessage WHERE fod = :fod');
+			$stmt->bindValue("fod", $this->orderID, PDO::PARAM_STR);
+			$stmt->execute();
+			if ($stmt->rowCount() > 0) $this->message = $stmt->fetch();
+		}
+
+		private function getSurcharges()
+		{
+			$stmt = $this->con->prepare('SELECT * FROM newallegrosurcharges WHERE fod = :fod');
+			$stmt->bindValue("fod", $this->orderID, PDO::PARAM_STR);
+			$stmt->execute();
+			if ($stmt->rowCount() > 0) $this->surcharges = $stmt->fetchAll();
+		}
+	}
+
+
 	$pdo = new DBconn();
 	$allegro = new AllegroServices();
 
@@ -29,6 +120,15 @@
 		$fod_number = $order['fod'];
 	}
 
+	$orderData = new Order($fod_number);
+	$order = (array)$orderData->order;
+	$buyer = (array)$orderData->buyer;
+	$invoice = $orderData->invoice;
+	$message = $orderData->message;
+	$surcharges = $orderData->surcharges;
+	$items = $orderData->items;
+	$delivery = $orderData->delivery;
+
 	$allegrofod = $allegro->order("GET", "/checkout-forms/{$fod_number}");
 
 	$orderbilling = $allegro->billing("GET", "/billing-entries?order.id={$fod_number}");
@@ -39,28 +139,14 @@
 		return $res->count;
 	}
 
-	$order = $pdo->prepare('SELECT * FROM newallegroorders WHERE fod=:fod');
-	$order->bindValue(":fod", $fod_number, PDO::PARAM_STR);
-	$order->execute();
-	$order = $order->fetch();
-
-	$buyer = $pdo->prepare('SELECT * FROM newallegrobuyer WHERE fod=:fod');
-	$buyer->bindValue(":fod", $fod_number, PDO::PARAM_STR);
-	$buyer->execute();
-	$buyer = $buyer->fetch();
-
 	$kupujacy = $buyer['username'] . '</p><p>' . $buyer['street'] . '</p><p>' . $buyer['postcode'] . ' ' . $buyer['city'] . '</p><p>' . $buyer['phoneNumber'];
 
-	$invoice = $pdo->prepare('SELECT * FROM newallegroinvoice WHERE fod=:fod');
-	$invoice->bindValue(":fod", $fod_number, PDO::PARAM_STR);
-	$invoice->execute();
 	$faktura = '';
-	if ($invoice->rowCount() != 0) {
-		$invoice = $invoice->fetch();
-		if ($invoice['companytaxid'] != "") {
-			$faktura .= '<b>NIP: ' . $invoice['companytaxid'] . '</b></b><p>';
+	if ($invoice !== false) {
+		if ($invoice->companytaxid != "") {
+			$faktura .= '<b>NIP: ' . $invoice->companytaxid . '</b></b><p>';
 		}
-		$faktura .= $invoice['companyname'] . '</p><p>' . $invoice['naturalperson'] . '</p><p>' . $invoice['street'] . '</p><p>' . $invoice['zipcode'] . ' ' . $invoice['city'];
+		$faktura .= $invoice->companyname . '</p><p>' . $invoice->naturalperson . '</p><p>' . $invoice->street . '</p><p>' . $invoice->zipcode . ' ' . $invoice->city;
 	} else {
 		if ($allegrofod->invoice->required == NULL) {
 			$faktura .= 'PARAGON';
@@ -69,45 +155,22 @@
 		}
 	}
 
-	$delivery = $pdo->prepare('SELECT * FROM newallegrodelivery WHERE fod=:fod');
-	$delivery->bindValue(":fod", $fod_number, PDO::PARAM_STR);
-	$delivery->execute();
-	if ($delivery->rowCount() > 0) {
-		$delivery = $delivery->fetch();
-		$wysylka = $delivery['companyname'] . '</p><p>' . $delivery['addressname'] . '</p><p>' . $delivery['street'] . '</p><p>' . $delivery['postcode'] . ' ' . $delivery['city'] . '</p><p>' . $delivery['phonenumber'];
-		$methodname = $delivery['methodname'];
-		$methodname .= ($delivery['smart'] != 0) ? ' <b>SMART</b>' : '';
-		$pickuppoint = $delivery['pickuppoint'];
-		$deliverycost = number_format($delivery['cost'], 2, ',', ' ');
-		$numerpaczki = $delivery['numberofpackages'];
-	} else {
-		($order['statusfod'] == "READY_FOR_PROCESSING") ? header("Location: ./odswiez.php?fod=" . $order['fod']) : '';
-		$wysylka = '';
-		$methodname = '';
-		$pickuppoint = '';
-		$deliverycost = '';
-		$numerpaczki = '';
-	}
 
-	$message = $pdo->prepare('SELECT * FROM newallegromessage WHERE fod=:fod');
-	$message->bindValue(":fod", $fod_number, PDO::PARAM_STR);
-	$message->execute();
-	$message = ($message->rowcount() > 0) ? $message->fetch()['messagetoseller'] : '';
+	$deliveryAddress = $delivery->companyname . '</p><p>' . $delivery->addressname . '</p><p>' . $delivery->street . '</p><p>' . $delivery->postcode . ' ' . $delivery->city . '</p><p>' . $delivery->phonenumber;
+	$methodname = $delivery->methodname;
+	$methodname .= ($delivery->smart != 0) ? ' <b>SMART</b>' : '';
+	$pickuppoint = $delivery->pickuppoint;
+	$deliverycost = number_format($delivery->cost, 2, ',', ' ');
+	$numerpaczki = $delivery->numberofpackages;
 
-	$surcharges = $pdo->prepare('SELECT * FROM newallegrosurcharges WHERE fod=:fod');
-	$surcharges->bindValue(":fod", $fod_number, PDO::PARAM_STR);
-	$surcharges->execute();
-	$surcharges = $surcharges->fetch();
+	$message = ($message !== false) ? $message->messagetoseller : '';
 
-	$zakupy = $pdo->prepare('SELECT * FROM newallegrolineitems WHERE FIND_IN_SET(id,:itemid)');
-	$zakupy->bindValue(":itemid", $order['itemid']);
-	$zakupy->execute();
-	$towary = '';
-	$zatowary = 0;
+	$allItems = '';
+	$sumOfItems = 0;
 	$lp = 0;
-	foreach ($zakupy->fetchAll() as $i) {
-		$zatowary += $i['price'] * $i['quantity'];
-		$towary .= '<tr class="item"><td>' . ++$lp . '</td><td><a target="_blank" href="https://allegro.pl/oferta/' . $i['offerid'] . '">(' . $i['offerid'] . ')</a></td><td class="offername">' . $i['offername'] . '</td><td class="offerexternal">' . $i['offerexternal'] . '</td><td class="quantity">' . $i['quantity'] . '</td><td>' . number_format($i['originalprice'], 2, ',', ' ') . '</td><td>' . number_format($i['price'], 2, ',', ' ') . '</td></tr>';
+	foreach ($items as $item) {
+		$sumOfItems += $item->price * $item->quantity;
+		$allItems .= '<tr class="item"><td>' . ++$lp . '</td><td><a target="_blank" href="https://allegro.pl/oferta/' . $item->offerid . '">(' . $item->offerid . ')</a></td><td class="offername">' . $item->offername . '</td><td class="offerexternal">' . $item->offerexternal . '</td><td class="quantity">' . $item->quantity . '</td><td>' . number_format($item->originalprice, 2, ',', ' ') . '</td><td>' . number_format($item->price, 2, ',', ' ') . '</td></tr>';
 	}
 
 	$korekta = '<a href="mailto:' . $buyer['email'] . '?subject=Korekta od iSAT (allegro), zwróciłeś &body=Dzień dobry,%0D%0Aw załączniku przesyłam korektę do FV. Proszę o mailowe potwierdzenie jej otrzymania.%0D%0A%0D%0AMaciej Krupiński%0D%0ASAT-SERWIS%0D%0Aul. Północna 36%0D%0A91-425 ŁÓDŹ%0D%0A426319277%0D%0APN-PT w godz. 9-17">@Korekta</a>';
@@ -156,14 +219,14 @@
 	echo '<div class="sektor">';
 	echo '<div class="box"><p id="buyerName" onmouseover="showhide(\'buyerName\',\'buyerBtn\')">Dane klienta</p><button id="buyerBtn" class="btn" onmouseout="showhide(\'buyerBtn\',\'buyerName\')" onclick="edit(\'buyer\')">Edytuj dane</button><p>' . $kupujacy . '</p></div>';
 	echo '<div class="box"><p id="invoiceName" onmouseover="showhide(\'invoiceName\',\'invoiceBtn\')">Dane bilingowe</p><button id="invoiceBtn" class="btn" onmouseout="showhide(\'invoiceBtn\',\'invoiceName\')" onclick="edit(\'invoice\')">Edytuj dane</button><p>' . $faktura . '</p></div>';
-	echo '<div class="box"><p id="deliveryName" onmouseover="showhide(\'deliveryName\',\'deliveryBtn\')">Dane dostawy</p><button id="deliveryBtn" class="btn" onmouseout="showhide(\'deliveryBtn\',\'deliveryName\')" onclick="edit(\'delivery\')">Edytuj dane</button><p>' . $wysylka . '</p></div>';
+	echo '<div class="box"><p id="deliveryName" onmouseover="showhide(\'deliveryName\',\'deliveryBtn\')">Dane dostawy</p><button id="deliveryBtn" class="btn" onmouseout="showhide(\'deliveryBtn\',\'deliveryName\')" onclick="edit(\'delivery\')">Edytuj dane</button><p>' . $deliveryAddress . '</p></div>';
 	echo '</div>';
 
 	echo '<div class="sektor">';
 	echo '<table id="itemlist" >';
 	echo '<tr ondblclick="edit(\'items\')"><td></td><td>Oferta</td><td>Nazwa</td><td>Kod</td><td>Ilość</td><td>Cena</td><td>Zapłacił</td></tr>';
-	echo $towary;
-	echo '<tr><td colspan="6">Łącznie:</td><td>' . number_format($zatowary, 2, ',', ' ') . '</td></tr>';
+	echo $allItems;
+	echo '<tr><td colspan="6">Łącznie:</td><td>' . number_format($sumOfItems, 2, ',', ' ') . '</td></tr>';
 	echo '</table>';
 	echo '</div>';
 
@@ -184,14 +247,16 @@
 	echo '<span class="nazwa">Id płatności:</span><span class="wartosc"><a target="_blank" href="https://allegro.pl/myaccount/newpayments_payment_details.php?trans_id=' . $order['transactionid'] . '">' . $order['paymentid'] . '</a></span>';
 	echo '</div>';
 
-	if (!empty($surcharges)) {
-		echo '<div class="sektor">';
-		echo '<span class="nazwa">DOPŁATA:</span><span class="wartosc"></span></br>';
-		echo '<span class="nazwa">Kwota:</span><span class="wartosc">' . number_format($surcharges['price'], 2, ',', ' ') . '</span></br>';
-		echo '<span class="nazwa">Sposód dopłaty:</span><span class="wartosc">' . $surcharges['methodprovider'] . '</span></br>';
-		echo '<span class="nazwa">Data płatności:</span><span class="wartosc">' . $surcharges['finishedat'] . '</span></br>';
-		echo '<span class="nazwa">Id płatności:</span><span class="wartosc"><a target="_blank" href="https://allegro.pl/myaccount/newpayments_payment_details.php?trans_id=' . $surcharges['id'] . '">' . $surcharges['id'] . '</a> (' . $surcharges['transactionid'] . ')</span>';
-		echo '</div>';
+	if ($surcharges !== false) {
+		foreach ($surcharges as $surcharge) {
+			echo '<div class="sektor">';
+			echo '<span class="nazwa">DOPŁATA:</span><span class="wartosc"></span></br>';
+			echo '<span class="nazwa">Kwota:</span><span class="wartosc">' . number_format($surcharge->price, 2, ',', ' ') . '</span></br>';
+			echo '<span class="nazwa">Sposód dopłaty:</span><span class="wartosc">' . $surcharge->methodprovider . '</span></br>';
+			echo '<span class="nazwa">Data płatności:</span><span class="wartosc">' . $surcharge->finishedat . '</span></br>';
+			echo '<span class="nazwa">Id płatności:</span><span class="wartosc"><a target="_blank" href="https://allegro.pl/myaccount/newpayments_payment_details.php?trans_id=' . $surcharge->id . '">' . $surcharge->id . '</a> (' . $surcharge->transactionid . ')</span>';
+			echo '</div>';
+		}
 	}
 
 	echo '<div class="sektor">';
