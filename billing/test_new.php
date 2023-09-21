@@ -2,6 +2,7 @@
 <?php
 include_once("../allegrofunction.php");
 require_once('../../tcpdf/tcpdf.php');
+$allegro = new AllegroServices();
 
 $paymentId = $_GET['numer'];
 
@@ -11,8 +12,7 @@ function getBillingHistory($offset = 0, $group = null, $occurredAtGte = null, $o
     $group = (!is_null($group)) ? "&group={$group}" : '';
     $occurredAtGte = (!is_null($occurredAtGte)) ? "&occurredAt.gte={$occurredAtGte}" : '';
     $occurredAtLte = (!is_null($occurredAtLte)) ? "&occurredAt.lte={$occurredAtLte}" : '';
-    $pay = getRequestPublic('https://api.allegro.pl/payments/payment-operations?limit=100&offset=' . $offset . $group . $occurredAtGte . $occurredAtLte);
-    $pay = json_decode($pay);
+    $pay = $allegro->payments("GET", '/payment-operations?limit=100&offset=' . $offset . $group . $occurredAtGte . $occurredAtLte);
     return $pay->paymentOperations;
 }
 

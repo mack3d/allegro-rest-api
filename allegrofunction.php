@@ -123,6 +123,12 @@ class AllegroServices
 		return $this->connect($method, $endpoint, $params, $this->headersAcceptPublic);
 	}
 
+	public function payments($method = 'GET', $endpoint = '/payments', array $params = [])
+	{
+		$endpoint = $this->url . '/payments' . $endpoint;
+		return $this->connect($method, $endpoint, $params, $this->headersAcceptPublic);
+	}
+
 	public function other($method = 'GET', $endpoint = '', array $params = [])
 	{
 		$endpoint = $this->url . $endpoint;

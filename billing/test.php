@@ -1,6 +1,9 @@
 <?php
 include_once("../allegrofunction.php");
 require_once('../../tcpdf/tcpdf.php');
+include_once("../../database.class.php");
+$pdo = new DBconn();
+$allegro = new allegroServices();
 
 function cmpw($a, $b)
 {
@@ -11,9 +14,6 @@ function cmpwkasa($a, $b)
 {
     return strnatcmp($a->value->amount, $b->value->amount);
 }
-
-$pdo = new PDO('mysql:host=localhost;dbname=satserwis', 'root', '');
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 function trid($payid)
 {
@@ -56,8 +56,7 @@ $limit = 100;
 $i = 0;
 while (true) {
     $offset = $limit * $i;
-    $pay = getRequestPublic('https://api.allegro.pl/payments/payment-operations?limit=' . $limit . '&offset=' . $offset . $gte . $lte . $paymentOperator);
-    $pay = json_decode($pay);
+    $pay = $allegro->payments("GET", '/payment-operations?limit=' . $limit . '&offset=' . $offset . $gte . $lte . $paymentOperator);
     $payment = array_merge($payment, $pay->paymentOperations);
     if ($offset > $pay->totalCount) {
         break;
