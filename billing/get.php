@@ -1,11 +1,14 @@
 <?php
-$limit = trim($_POST['limit']);
-$group = trim($_POST['group']);
-$gte = $_POST['gte'];
-$lte = $_POST['lte'];
-$offset = $_POST['offset'];
-$login = trim($_POST['login']);
-$operator = trim($_POST['operator']);
+
+$data = json_decode(trim(file_get_contents("php://input")));
+
+$limit = trim($data->limit);
+$group = trim($data->group);
+$gte = $data->gte;
+$lte = $data->lte;
+$offset = $data->offset;
+$login = trim($data->login);
+$operator = trim($data->operator);
 
 include_once("../allegrofunction.php");
 
