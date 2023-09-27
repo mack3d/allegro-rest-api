@@ -36,7 +36,7 @@ function setStatus(buttonElement) {
   })
     .then((res) => res.json())
     .then((data) => {
-      let status = data
+      const status = data
       let alertclass = "uuid_" + status.type
       if (status.response.taskCount.failed > 0) {
         if (status.new_status == "ACTIVATE") {
@@ -70,12 +70,13 @@ function setPriceDbl(elem) {
 }
 
 function setPrice(elem) {
-  var offer = elem.parentNode.parentNode.parentNode
-  var price = offer.getElementsByClassName("price")[0]
-  var massage = "zmiana ceny..."
+  const offer = elem.parentNode.parentNode.parentNode
+  const price = offer.getElementsByClassName("price")[0]
+  let massage = "zmiana ceny..."
   const uuid = uuidv4()
   information(offer, massage, uuid, "uuid_price")
   massage = "ustawiono cenę: "
+
   fetch("./php/setprice.php", {
     method: "POST",
     body: JSON.stringify({
@@ -87,13 +88,13 @@ function setPrice(elem) {
   })
     .then((res) => res.json())
     .then((data) => {
-      const status = data
-      var alertclass = "uuid_" + status.type
-      if (status.response.taskCount.failed > 0) {
+      const resp = data
+      let alertclass = "uuid_" + resp.type
+      if (resp.response.taskCount.failed > 0) {
         massage = "nie można zmienić ceny"
         alertclass = "uuid_alert"
       }
-      if (status.response.taskCount.success > 0) {
+      if (resp.response.taskCount.success > 0) {
         massage = massage + price.value
       }
       informationv2(massage, uuid, alertclass)
@@ -236,12 +237,15 @@ function prowizja(offer = null) {
 
 function getQuantityInOffer(externalId) {
   const firstElemOfExternal = externalId.value.split(" ")[0]
-  const count = firstElemOfExternal.replace(/(\d{4,5}|[xX])/g, "") || 1
+  let count = firstElemOfExternal.replace(/(\d{4,5}|[xX])/g, "") || 1
+  if (!Number.isInteger(count)) {
+    count = 1
+  }
   return count
 }
 
 function setStockDbl(elem) {
-  const offer = elem.parentNode.parentNode.parentNode
+  const offer = elem.closest(".offer")
   const externalId = offer.getElementsByClassName("externalid")[0]
   const count = getQuantityInOffer(externalId)
 
@@ -253,9 +257,9 @@ function setStockDbl(elem) {
 }
 
 function setStock(elem) {
-  var offer = elem.parentNode.parentNode.parentNode
-  var stock = offer.getElementsByClassName("stock")[0]
-  var massage = "zmiana ilości..."
+  const offer = elem.closest(".offer")
+  const stock = offer.getElementsByClassName("stock")[0]
+  let massage = "zmiana ilości..."
   const uuid = uuidv4()
   information(offer, massage, uuid, "uuid_stock")
   massage = "ilość: "
@@ -271,7 +275,7 @@ function setStock(elem) {
     .then((res) => res.json())
     .then((data) => {
       const status = data
-      var alertclass = "uuid_" + status.type
+      let alertclass = "uuid_" + status.type
       if (status.response.taskCount.failed > 0) {
         massage = "błąd zmiany ilości"
         alertclass = "uuid_alert"

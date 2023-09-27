@@ -1,5 +1,5 @@
 <?php
-$code = $_POST['code'];
+$code = $_GET['code'];
 function getProductData($code)
 {
     $product = new SoapClient('https://sklep.satserwis.pl/backend.php/product/soap?wsdl');

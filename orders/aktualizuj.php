@@ -7,6 +7,7 @@ include_once("../allegrofunction.php");
 include_once("../../database.class.php");
 
 $pdo = new DBconn();
+$allegro = new AllegroServices();
 
 function bladdodziennika($wpis)
 {
@@ -39,7 +40,7 @@ if (isset($_GET['fod'])) {
         if ($test == "READY_FOR_PROCESSING") {
             $status = "COMPLETING";
             $statusindex = 4;
-            putPublic('https://api.allegro.pl/order/checkout-forms/' . $fod . '/fulfillment', $wrealizacji);
+            $allegro->order("PUT", "/checkout-forms/{$fod}/fulfillment", $wrealizacji);
         }
     }
     if ($status != "PRINT") {

@@ -84,19 +84,30 @@ if (in_array(substr($code, 0, 2), $duzetowary)) {
     $cennik = "80364e50-e41d-4440-ab6a-9d9169c91570";
 }
 
+$allegro = new AllegroServices();
+
+$res = $allegro->sale("GET", "/products?mode=GTIN&phrase={$man_code}");
+$product = $res->products[0];
+$parameters = $product->parameters;
+array_push($parameters, array("id" => "11323", "valuesIds" => array("11323_1")));
+array_push($parameters, array("id" => "225693", "values" => array($man_code), "valuesIds" => array()));
+
 $draft = array(
     "name" => $names,
-    "category" => array(
-        "id" => $allegrocategory,
-    ),
     "external" => array(
         "id" => $code,
     ),
+    "product" => array(
+        "id" => $product->id,
+    ),
+    "category" => array(
+        "id" => $product->category->id,
+    ),
+    "parameters" => $product->parameters,
     "payments" => array(
         "invoice" => "VAT",
     ),
     "images" => $images,
-    "ean" => strval($man_code),
     "description" => $desc,
     "sellingMode" => array(
         "format" => "BUY_NOW",
@@ -139,6 +150,6 @@ $draft = array(
     "language" => "pl-PL"
 );
 
-$allegro = new AllegroServices();
 $i = $allegro->sale("POST", '/offers', $draft);
+
 print_r(json_encode($i));

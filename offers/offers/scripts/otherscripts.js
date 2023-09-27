@@ -61,13 +61,11 @@ function checkStock() {
       const offerName = offer.getElementsByClassName("name")[0].innerText
       const offerExternalid =
         offer.getElementsByClassName("externalid")[0].value
-      const externalIds = offerExternalid.match(/\d{4,5}/g)
-      const externalIdsv2 = externalIdToArr(offerExternalid)
+      const externalIds = externalIdToArr(offerExternalid)
 
       let offerStock = offer.getElementsByClassName("stock")[0]
       const fppStock = item.getElementsByClassName("fpp-stock")[0].innerHTML
       const fppCode = item.getElementsByClassName("fpp-code")[0].innerHTML
-
       if (
         fppStock != 0 &&
         checkValueIsInt(fppStock) &&
@@ -76,19 +74,19 @@ function checkStock() {
       ) {
         offerStock.focus()
         if (
-          externalIdsv2[0].code == fppCode.toString().trim() &&
-          offerStock.value * externalIdsv2[0].count != fppStock
+          externalIds[0].code == fppCode.toString().trim() &&
+          offerStock.value * externalIds[0].count != fppStock
         ) {
           setStockDbl(offerStock)
         }
 
         if (
-          externalIdsv2[0].code != fppCode.toString().trim() &&
+          externalIds[0].code != fppCode.toString().trim() &&
           offerStock.value != fppStock
         ) {
           const quest = confirm(
             `${fppCode} - ${offerName} - ${offerStock.value} > ${Math.floor(
-              fppStock / externalIdsv2[0].count
+              fppStock / externalIds[0].count
             )}`
           )
           if (quest) {

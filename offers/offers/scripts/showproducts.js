@@ -99,72 +99,6 @@ class Offers {
 async function getoffers() {
   const offers = new Offers()
   offers.getOffers()
-  /*let searchText = document.getElementById("search")
-  const loadJson = document.getElementById("dostawa").checked
-  let statusOffers = document.getElementById("ostatus").value
-  const allCodesElement = document.getElementById("all_code")
-  let searchData = {
-    offerids: null,
-    codes: null,
-    dostawa: null,
-    name: null,
-    utrzymaniowa: 0
-  }
-
-  if (loadJson == true) {
-    searchData.dostawa = await readJsonfile()
-    searchData.codes = searchData.dostawa.codes
-    searchText.value = ""
-  }
-
-  let serchValue = searchText.value.trim()
-
-  if (serchValue.length > 1) {
-    searchData.offerids = serchValue.match(/\d{9,18}/g)
-    const utrzymaniowa = serchValue.match(/utrzymaniowa/g)
-    searchData.utrzymaniowa = utrzymaniowa != null ? utrzymaniowa.length : 0
-    searchData.codes = serchValue.match(/\d{4,5}/g)
-    searchData.name = serchValue.match(/[A-Za-z0-9]{2,20}/gi)
-  }
-  searchData.codes = searchData.offerids != null ? [] : searchData.codes
-  searchData.name = searchData.codes == null ? searchData.name : null
-
-  const allegro = await getAllegroOffers(
-    searchData.offerids,
-    searchData.codes,
-    searchData.name,
-    searchData.utrzymaniowa
-  )
-
-  const products = await getFppProducts(searchData.codes, allegro.allcodes)
-
-  document.getElementById("showoffers").innerHTML = ""
-  document.getElementById("totalcount").innerText = allegro.totalCount
-
-  allCodesElement.value = allegro.allcodes.join(" ")
-  if (searchData.codes != null || searchData.offerids != null) {
-    await showproducts(allegro, products, searchData)
-    await addButtonCreateNew()
-  } else {
-    await showOffers(allegro, products)
-  }
-
-  if (statusOffers == "ADMIN") {
-    const offers = document.getElementsByClassName("id")
-    for (const offer of offers) {
-      const offerData = await getOffer(offer.innerText)
-      const parent = offer.parentNode.parentNode
-      console.log(offer.innerText, offerData.publication.endedBy)
-      if (offerData.publication.endedBy == "ADMIN") {
-        const stat = parent.getElementsByClassName("stats")[0]
-        const par = document.createElement("p")
-        par.innerText = "ADMIN"
-        stat.appendChild(par)
-      } else {
-      }
-    }
-    console.log("done")
-  }*/
 }
 
 function searchData() {
@@ -357,7 +291,10 @@ function addButtonCreateNew() {
     const offers = Array.prototype.slice.call(
       container.getElementsByClassName("offer")
     )
-    if (offers.length == 0) {
+    const product = Array.prototype.slice.call(
+      container.getElementsByClassName("product")
+    )
+    if (offers.length == 0 && product.length > 0) {
       try {
         const product = container.getElementsByClassName("product")[0]
         const spans = product.getElementsByTagName("span")
@@ -376,8 +313,8 @@ function addButtonCreateNew() {
 }
 
 function createContainer(item) {
-  let showoffers = document.getElementById("showoffers")
-  let container = document.createElement("div")
+  const showoffers = document.getElementById("showoffers")
+  const container = document.createElement("div")
   container.classList.add("container")
   container.id = item
   showoffers.appendChild(container)

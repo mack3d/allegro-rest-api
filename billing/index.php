@@ -37,41 +37,41 @@
 
 <template id="outcome">
     <tr class="payment">
-        <td class="idx"></td>
-        <td class="payment_id"><a href="" target="_blank"></a></td>
-        <td class="payment_date"></td>
-        <td class="payment_total"></td>
-        <td class="payment_name">wypłata środków</td>
-        <td class="payment_opertator" colspan="2"></td>
+        <td></td>
+        <td><a href="" target="_blank"></a></td>
+        <td></td>
+        <td></td>
+        <td>wypłata środków</td>
+        <td colspan="2"></td>
     </tr>
 </template>
 
 <template id="income">
     <tr class="payment">
-        <td class="idx"></td>
-        <td class="payment_id"><a href="" target="_blank"></a></td>
-        <td class="payment_date"></td>
-        <td class="payment_total"></td>
-        <td class="payment_login"></td>
-        <td class="payment_name" colspan="2"></td>
+        <td></td>
+        <td><a href="" target="_blank"></a></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td colspan="2"></td>
     </tr>
 </template>
 
 <template id="refund">
     <tr class="payment">
-        <td class="idx"></td>
-        <td class="payment_id"><a href="" target="_blank"></a></td>
-        <td class="payment_date"></td>
-        <td class="payment_total"></td>
-        <td class="payment_login"></td>
-        <td class="payment_name"></td>
-        <td class="payment_checkbox"><input type="checkbox" class="checks" /></td>
+        <td></td>
+        <td><a href="" target="_blank"></a></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><input type="checkbox" class="checks" /></td>
     </tr>
 </template>
 
 <script>
     function getValue() {
-        var checks = document.getElementsByClassName('checks');
+        const checks = document.getElementsByClassName('checks');
         for (i = 0; i < checks.length; i++) {
             checks[i].checked = true;
         }
@@ -118,27 +118,31 @@
                 })
             })
             const data = await res.json()
-            const indexOfData = Object.keys(data)
-            indexOfData.reverse()
-            for (i of indexOfData) {
-                const payment = data[i]
+            const propertyValues = Object.values(data);
+            propertyValues.reverse()
+            const container = document.getElementById("lista")
+            const incomeTemplate = document.getElementById("income")
+            const refundTemplate = document.getElementById("refund")
+            const outcomeTemplate = document.getElementById("outcome")
+            let paymentTemp;
+            for (let i = 0; i < propertyValues.length; i++) {
+                const payment = propertyValues[i]
                 switch (payment.group) {
                     case 'REFUND':
-                        addRefund(payment)
+                        paymentTemp = addRefund(i, refundTemplate, payment)
                         break;
                     case 'INCOME':
-                        addIncome(payment)
+                        paymentTemp = addIncome(i, incomeTemplate, payment)
                         break;
                     default:
-                        addOutcome(payment)
+                        paymentTemp = addOutcome(i, outcomeTemplate, payment)
                 }
+                container.appendChild(paymentTemp)
             }
         }
     }
 
-    function addIncome(payment) {
-        const container = document.getElementById("lista")
-        const template = document.getElementById("income")
+    function addIncome(i, template, payment) {
         const paymentTemp = template.content.cloneNode(true)
         const paymentDate = payment.occurredAt.substring(0, 4) + '-' + payment.occurredAt.substring(5, 7) + '-' + payment.occurredAt.substring(8, 10)
 
@@ -152,12 +156,10 @@
         tds[4].innerText = payment.participant.login
         tds[5].innerText = payment.wallet.paymentOperator
 
-        container.appendChild(paymentTemp)
+        return paymentTemp
     }
 
-    function addRefund(payment) {
-        const container = document.getElementById("lista")
-        const template = document.getElementById("refund")
+    function addRefund(i, template, payment) {
         const paymentTemp = template.content.cloneNode(true)
         const paymentDate = payment.occurredAt.substring(0, 4) + '-' + payment.occurredAt.substring(5, 7) + '-' + payment.occurredAt.substring(8, 10)
 
@@ -175,12 +177,10 @@
         chbox.setAttribute("id", payment.payment.id)
         chbox.setAttribute("name", payment.payment.id)
 
-        container.appendChild(paymentTemp)
+        return paymentTemp
     }
 
-    function addOutcome(payment) {
-        const container = document.getElementById("lista")
-        const template = document.getElementById("outcome")
+    function addOutcome(i, template, payment) {
         const paymentTemp = template.content.cloneNode(true)
         const paymentDate = payment.occurredAt.substring(0, 4) + '-' + payment.occurredAt.substring(5, 7) + '-' + payment.occurredAt.substring(8, 10)
 
@@ -190,9 +190,9 @@
         elem_a.innerText = payment.payout.id
         elem_a.setAttribute("href", 'test.php?numer=' + payment.payout.id + '&operator=' + payment.wallet.paymentOperator + '&data=' + payment.occurredAt + '&suma=' + payment.value.amount)
         tds[2].innerText = paymentDate
-        tds[3].innerText = payment.value.amount
+        tds[3].innerText = Math.abs(payment.value.amount)
         tds[5].innerText = payment.wallet.paymentOperator
 
-        container.appendChild(paymentTemp)
+        return paymentTemp
     }
 </script>

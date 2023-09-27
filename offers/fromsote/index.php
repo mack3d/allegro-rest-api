@@ -124,9 +124,7 @@ $kod = '';
 			<input class="dane" type="text" id="stock" placeholder="Ilość">
 			<input class="dane" type="text" id="allegrocategory" placeholder="kategoria" value="67346" onChange="allegrocategoryparametry()">
 			<input class="dane" type="text" id="allegrocategoryname" placeholder="kategoria" disabled="disabled">
-			<ul id="allegroparametry">
 
-			</ul>
 			<textarea id="short_description" placeholder="Skrócony opis" rows="3" cols="70" onKeyUp="podglad()"></textarea>
 			<textarea id="description" placeholder="Opis" rows="10" cols="70" onKeyUp="podglad()"></textarea>
 			<input class="dane" type="id" id="id" disabled>

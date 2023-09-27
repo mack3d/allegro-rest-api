@@ -3,10 +3,8 @@ include_once("../../allegrofunction.php");
 
 $allegro = new AllegroServices();
 
-$data = json_decode(file_get_contents('php://input'), true);
+$ean = trim($_GET['ean']);
 
-$ean = trim($data['ean']);
-
-$res = $allegro->sale("GET", "/products?mode=GTIN&phrase={$ean}");
+$res = $allegro->sale("GET", "/offers/14404158983");
 
 print_r(json_encode($res));

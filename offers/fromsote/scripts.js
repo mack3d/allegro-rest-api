@@ -3,28 +3,33 @@ function zmiennazwe() {
   name.value = document.getElementById("nameallegro").value
 }
 
-async function getproduct(elem) {
-  const res = await fetch("./allegrogetproductdata.php", {
-    method: "POST",
-    body: JSON.stringify({
-      ean: elem.value
-    })
-  })
-  const data = await res.json()
+async function getproduct(ean_code) {
+  const req = await fetch(
+    "./allegrogetproductdata.php?" +
+      new URLSearchParams({
+        ean: ean_code
+      }),
+    {
+      method: "GET"
+    }
+  )
+  const data = await req.json()
+
+  console.log(data)
 }
 
-function getProductFromSote() {
-  var code = document.getElementById("code").value
-  var names = document.getElementById("names")
-  var nameallegro = document.getElementById("nameallegro")
-  var short_description = document.getElementById("short_description")
-  var description = document.getElementById("description")
-  var price = document.getElementById("price")
-  var man_code = document.getElementById("man_code")
-  var id = document.getElementById("id")
-  var odp = document.getElementById("numbera")
-  var stock = document.getElementById("stock")
-  var allegrocategory = document.getElementById("allegrocategory")
+async function getProductFromSote() {
+  const code = document.getElementById("code").value
+  const names = document.getElementById("names")
+  const nameallegro = document.getElementById("nameallegro")
+  const short_description = document.getElementById("short_description")
+  const description = document.getElementById("description")
+  const price = document.getElementById("price")
+  const man_code = document.getElementById("man_code")
+  const id = document.getElementById("id")
+  const odp = document.getElementById("numbera")
+  const stock = document.getElementById("stock")
+  const allegrocategory = document.getElementById("allegrocategory")
 
   if (code.length > 3) {
     var grupa = code.substr(0, 2)
@@ -91,53 +96,48 @@ function getProductFromSote() {
     }
 
     odp.innerText = ""
-    if (window.XMLHttpRequest) {
-      xmlhttp = new XMLHttpRequest()
-    } else {
-      xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
-    }
-    xmlhttp.onreadystatechange = function () {
-      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        var odpowiedz = xmlhttp.responseText
-        resp = JSON.parse(odpowiedz)
-        productdata = resp.sote
-        fpp = resp.fpp[0]
-        names.value = productdata.name
-        short_description.value =
-          "<h2>" +
-          replaceTytul(productdata.name) +
-          "</h2>" +
-          replaceHtml(productdata.short_description)
-        description.value = replaceHtml(productdata.description)
-        price.value = productdata.price_brutto
-        man_code.value = productdata.man_code
-        id.value = productdata.id
-        stock.value = parseInt(fpp.ilosc)
-        if (resp.allegro[0].lastname != "") {
-          nameallegro.value = resp.allegro[0].lastname
-        }
 
-        liczbaznakow()
-        podglad()
-        allegrocategoryparametry()
+    const rfetch = await fetch(
+      "./getproductdata.php?" +
+        new URLSearchParams({
+          code: code
+        }),
+      {
+        method: "GET"
       }
-    }
-    var url = "&code=" + code
-    xmlhttp.open("POST", "getproductdata.php", true)
-    xmlhttp.setRequestHeader(
-      "Content-type",
-      "application/x-www-form-urlencoded"
     )
-    xmlhttp.send(url)
+    const resp = await rfetch.json()
+
+    soteData = resp.sote
+    fpp = resp.fpp[0]
+    names.value = soteData.name
+    short_description.value =
+      "<h2>" +
+      replaceTytul(soteData.name) +
+      "</h2>" +
+      replaceHtml(soteData.short_description)
+    description.value = replaceHtml(soteData.description)
+    price.value = soteData.price_brutto
+    man_code.value = soteData.man_code
+    id.value = soteData.id
+    stock.value = parseInt(fpp.ilosc)
+    if (resp.allegro[0].lastname != "") {
+      nameallegro.value = resp.allegro[0].lastname
+    }
+
+    liczbaznakow()
+    podglad()
+    //getproduct(soteData.man_code)
+    getallegrocategory()
   }
 }
 
 function liczbaznakow() {
-  var names = document.getElementById("names")
-  var liczbaznakow = document.getElementById("liczbaznakow")
+  const names = document.getElementById("names")
+  const liczbaznakow = document.getElementById("liczbaznakow")
   if (names.value.length > 0) {
     liczbaznakow.value = names.value.length
-    if (names.value.length > 50) {
+    if (names.value.length > 75) {
       liczbaznakow.style.color = "red"
     } else {
       liczbaznakow.style.color = "green"
@@ -178,145 +178,94 @@ function replaceHtml(desc) {
 }
 
 function podglad() {
-  var short_description = document.getElementById("short_description")
-  var description = document.getElementById("description")
-  var lookshort = document.getElementById("lookshort")
-  var lookdiv = document.getElementById("lookdiv")
+  const short_description = document.getElementById("short_description")
+  const description = document.getElementById("description")
+  const lookshort = document.getElementById("lookshort")
+  const lookdiv = document.getElementById("lookdiv")
   lookshort.innerHTML = short_description.value
   lookdiv.innerHTML = description.value
 }
 
-function createDraft() {
-  var code = document.getElementById("code").value
-  var names = document.getElementById("names").value
-  var short_description = document.getElementById("short_description")
-  var description = document.getElementById("description")
-  var price = document.getElementById("price").value
-  var man_code = document.getElementById("man_code").value
-  var allegrocategory = document.getElementById("allegrocategory").value
-  var id = document.getElementById("id").value
-  var odp = document.getElementById("numbera")
-  var stock = document.getElementById("stock").value
+async function createDraft() {
+  const code = document.getElementById("code").value
+  const names = document.getElementById("names").value
+  const short_description = document.getElementById("short_description")
+  const description = document.getElementById("description")
+  const price = document.getElementById("price")
+  const man_code = document.getElementById("man_code").value
+  const allegrocategory = document.getElementById("allegrocategory").value
+  const id = document.getElementById("id").value
+  const odp = document.getElementById("numbera")
+  const stock = document.getElementById("stock").value
 
   if (man_code == "") {
     man_code = 0
   }
-  var dataSend = {
+  const dataSend = {
     code: code,
     allegrocategory: allegrocategory,
     names: names,
     short_description: short_description.value,
     description: description.value,
-    price: price,
+    price: price.value,
     man_code: man_code,
     id: id,
     stock: stock
   }
 
-  if (window.XMLHttpRequest) {
-    xmlhttp = new XMLHttpRequest()
+  const rfetch = await fetch("./addnewdraft.php?", {
+    method: "POST",
+    body: JSON.stringify(dataSend)
+  })
+  const response = await rfetch.json()
+
+  if (typeof response.errors != "undefined") {
+    showErrors(response.errors)
   } else {
-    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
-  }
-  xmlhttp.onreadystatechange = function () {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-      var odpowiedz = JSON.parse(xmlhttp.responseText)
-      if (typeof odpowiedz.errors != "undefined") {
-        for (i = 0; i < odpowiedz.errors.length; i++) {
-          if (odpowiedz.errors[i].path.includes("sections[0]")) {
-            short_description.style.border = "2px solid red"
-          } else {
-            description.style.border = "2px solid red"
-          }
-          alert(odpowiedz.errors[i].userMessage)
-        }
-      } else {
-        odp.innerHTML =
-          '<a href="https://allegro.pl/offer/' +
-          odpowiedz.id +
-          '/restore">Aukcja ' +
-          odpowiedz.id +
-          "</a>"
-      }
-    }
-  }
-  const jsonString = JSON.stringify(dataSend)
-  xmlhttp.open("POST", "addnewdraft.php")
-  xmlhttp.setRequestHeader("Content-Type", "application/json")
-  xmlhttp.send(jsonString)
-}
-
-function getallegrocategory() {
-  var allegrocategory = document.getElementById("allegrocategory")
-  var allegrocategoryname = document.getElementById("allegrocategoryname")
-  if (allegrocategory.value.length > 3) {
-    if (window.XMLHttpRequest) {
-      xmlhttp = new XMLHttpRequest()
-    } else {
-      xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
-    }
-    xmlhttp.onreadystatechange = function () {
-      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        var odpowiedz = xmlhttp.responseText
-        resp = JSON.parse(odpowiedz)
-        var sciezkacat = ""
-        for (var i = 0; i < resp.length; i++) {
-          if (sciezkacat != "") {
-            sciezkacat = " -> " + sciezkacat
-          }
-          sciezkacat = resp[i].name + sciezkacat
-        }
-        allegrocategoryname.value = sciezkacat
-      }
-    }
-    var url = "&id=" + allegrocategory.value
-    xmlhttp.open("POST", "allegrocategory.php", true)
-    xmlhttp.setRequestHeader(
-      "Content-type",
-      "application/x-www-form-urlencoded"
-    )
-    xmlhttp.send(url)
+    odp.innerHTML =
+      '<a href="https://allegro.pl/offer/' +
+      response.id +
+      '/restore">Aukcja ' +
+      response.id +
+      "</a>"
   }
 }
 
-function allegrocategoryparametry() {
-  var allegrocategory = document.getElementById("allegrocategory")
-  var allegroparametry = document.getElementById("allegroparametry")
-  allegroparametry.innerHTML = ""
-  if (allegrocategory.value.length > 3) {
-    if (window.XMLHttpRequest) {
-      xmlhttp = new XMLHttpRequest()
-    } else {
-      xmlhttp = new ActiveXObject("Microsoft.XMLHTTP")
-    }
-    xmlhttp.onreadystatechange = function () {
-      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-        var odpowiedz = xmlhttp.responseText
-        resp = JSON.parse(odpowiedz)
-        parametry = resp.parameters
-        var inserthtmlparam = ""
-        for (var i = 0; i < parametry.length; i++) {
-          typ = "input"
-          if (parametry[i].type == "dictonary") {
-            typ = "select"
-          }
-          var pch = document.createElement(typ)
-          pch.type = parametry[i].type
-          pch.required = parametry[i].required
-          pch.name = parametry[i].name
-          pch.placeholder = parametry[i].name
-          pch.id = parametry[i].id
-          allegroparametry.appendChild(pch)
-        }
-        getallegrocategory()
-      }
-    }
-    var url = "&id=" + allegrocategory.value
-    xmlhttp.open("POST", "allegrocategoryparametry.php", true)
-    xmlhttp.setRequestHeader(
-      "Content-type",
-      "application/x-www-form-urlencoded"
-    )
-    xmlhttp.send(url)
+function showErrors(errors) {
+  const short_description = document.getElementById("short_description")
+  const description = document.getElementById("description")
+  const price = document.getElementById("price")
+  for (e of errors) {
+    if (e.path.includes("sections[0]"))
+      short_description.style.border = "2px solid red"
+    if (e.path.includes("sections[2]"))
+      description.style.border = "2px solid red"
+    if (e.path.includes("sellingMode.price"))
+      price.style.border = "2px solid red"
   }
+}
+
+async function getallegrocategory() {
+  const allegrocategory = document.getElementById("allegrocategory")
+  const allegrocategorypath = document.getElementById("allegrocategoryname")
+
+  const rfetch = await fetch(
+    "./allegrocategory.php?" +
+      new URLSearchParams({
+        id: allegrocategory.value
+      }),
+    {
+      method: "GET"
+    }
+  )
+  const resp = await rfetch.json()
+
+  let pathToCategory = ""
+  for (let i = 0; i < resp.length; i++) {
+    if (pathToCategory != "") {
+      pathToCategory = " -> " + pathToCategory
+    }
+    pathToCategory = resp[i].name + pathToCategory
+  }
+  allegrocategorypath.value = pathToCategory
 }

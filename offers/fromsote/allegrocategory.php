@@ -1,7 +1,8 @@
 <?php
 include_once("../../allegrofunction.php");
+
 $allegro = new AllegroServices();
-$id = $_POST['id'];
+$id = $_GET['id'];
 
 $name = array();
 $x = 1;
